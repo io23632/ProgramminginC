@@ -1,0 +1,3 @@
+/home/io23632/Hamza/ProgramminginC/Minseweeper/cmake-build-debug/CMakeFiles/Minseweeper.dir
+/home/io23632/Hamza/ProgramminginC/Minseweeper/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/io23632/Hamza/ProgramminginC/Minseweeper/cmake-build-debug/CMakeFiles/rebuild_cache.dir
