@@ -1,4 +1,4 @@
-#include "/Users/admin/Desktop/Hamza/ProgramminginC/ADTs/General/general.c"
+#include "../ADTs/General/general.c"
 
 typedef struct dataframe{
     int i;
@@ -10,7 +10,6 @@ typedef struct dataframe{
 typedef struct root{
     dataframe* root;
 }root;
-
 
 dataframe* _insert(dataframe* t, int d);
 
