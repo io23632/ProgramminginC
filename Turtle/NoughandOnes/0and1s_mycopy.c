@@ -1,3 +1,12 @@
+/*QUESTIONS TO ASK NATHAN:
+1) Is there a simpler way of writing the while loop 
+2) How can we modify the programme so that the error message is more friendly to the user e.g. imagine if the the user entered: 
+BEGIN 
+ONE 
+NOUGHT
+Here the NULL character would be scanned but the error message that would appear is FATAL error expecting ONE or NOUGHT */
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -44,19 +53,10 @@ if (prog == NULL)
     ERROR("MEMORY ALLOCATION FAILURE");
 }
 
-prog->current_count = 0;
-
-while (prog->current_count < MAXNUMBTOKENS && scanf("%s", prog->words[prog->current_count]) == 1)
-{
-    prog->current_count++;
-}
-
-
+int i = 0;
+while (scanf("%s", prog->words[i++]) == 1);
 Prog(prog);
-
-
 printf("Pharsed Ok");
-
 free(prog);
 
 return 0;
