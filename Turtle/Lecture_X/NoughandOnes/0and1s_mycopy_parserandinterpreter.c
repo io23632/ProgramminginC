@@ -1,11 +1,3 @@
-/*QUESTIONS TO ASK NATHAN:
-1) Is there a simpler way of writing the while loop 
-2) How can we modify the programme so that the error message is more friendly to the user e.g. imagine if the the user entered: 
-BEGIN 
-ONE 
-NOUGHT
-Here the NULL character would be scanned but the error message that would appear is FATAL error expecting ONE or NOUGHT */
-
 
 #include <stdio.h>
 #include <string.h>
@@ -109,6 +101,10 @@ void Code(Program* p)
     Code(p);
 }
 
+
+/* Added interpreter functionality to the statement function so that some kind of useful feedback is given to the user, this code is 
+the interpreter: */
+
 void Statement(Program* p)
 {
 
@@ -118,11 +114,15 @@ characters entered are either a NOUGHT or a ONE */
 
     if (strsame(p->words[p->current_count], "ONE") )
     {
+        // print statement added: 
+        printf("1\n");
         return;
     }
 
     if (strsame(p->words[p->current_count], "NOUGHT") )
     {
+         // print statement added: 
+         printf("0\n");
         return;
     }
 
