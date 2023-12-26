@@ -13,21 +13,32 @@ typedef struct phrase{
 
 int parseFactor(phrase* p);
 int parseProduct(phrase* p);
+int parseSum(phrase* p);
+void free_phrase(phrase* p);
 
 
-int main(){
+int main(void){
 
     phrase* p = (phrase*)calloc(1, sizeof(phrase));
-    p->current = calloc(MAXSTRLEN, sizeof(char));  // Allocate memory for the string
+    if (p == NULL)
+    {
+        return -1;
+    }
+
+    p->current = calloc(MAXSTRLEN, sizeof(char));
+    
+    if (p->current == NULL){
+        return -1;
+    }
+
+
     strcpy(p->current, "2*3+4*5");
     
-   int result = parseProduct(p);
-
-   printf("result is: %d/n", result);
+   int result = parseSum(p);
+   printf("result is: %d\n", result);
 
     
-    free(p->current);
-    free(p);
+    free_phrase(p);
     return 0;
 }
 
@@ -56,5 +67,22 @@ int parseFactor(phrase* p)
 }
 
 
+int parseSum(phrase* p)
+{
+    int product1 = parseProduct(p);
+
+    while (*p->current == '+')
+    {
+        p->current++;
+        int product2 = parseProduct(p);
+        product1 = product1 + product2;
+    }
+    return product1;
+    
+}
 
 
+void free_phrase(phrase* p)
+{
+    free(p);
+}
