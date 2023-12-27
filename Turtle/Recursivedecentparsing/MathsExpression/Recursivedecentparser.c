@@ -21,9 +21,9 @@ char* x;
 int main()
 {
 
-x = "2*3+4*5";
+x = "2*(3+4)";
 
-int result = parseProduct();
+int result = parseSum();
 printf("result is: %d\n", result);
 
 
@@ -54,6 +54,17 @@ int parseFactor()
     {
         return *x++ - '0';
     }
+    /* if it contains a bracket, skip the bracket and evaluate the expression inside 
+    by recrusively calling the parseFactor function */ 
+    else if (*x == '(')
+    {
+        x++;
+        int sum = parseSum();
+        // skip closing brackets:
+        x++;
+        return sum;
+    }
+
     else{
         printf("expected a integer value ");
         return - 1;
