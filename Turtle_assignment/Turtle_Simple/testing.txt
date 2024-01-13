@@ -1,0 +1,4 @@
+// What are you doing what is your thought process: 
+// START: 
+I started by defining the data strucutures I needed for my parse, the various structs that I would need. I realised early on that I can utalise the use of a union in INS
+becuase INS either a FWD OR RGT instruction 

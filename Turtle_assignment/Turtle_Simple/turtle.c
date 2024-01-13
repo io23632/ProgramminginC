@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 
 #define MAXTOKENSIZE 20
 /*
@@ -11,7 +14,7 @@
 <NUM> ::= 10 or -17.99 etc.
 */
 
-typedef enum INSTYPE{
+typedef enum{
     INS_START,
     INS_END,
     INS_FWD,
@@ -23,8 +26,6 @@ typedef struct PROG{
     int current_count;
 
 }PROG;
-
-
 
 typedef double NUM;
 
@@ -39,42 +40,104 @@ typedef struct RGT{
     NUM number;
 }RGT;
 
-typedef union INS
-{
-    FWD forwarad;
-    RGT right;
-}INS;
-
 typedef struct INSLST {
-    INS instruction;
-    INSLST* next;
+    INSTYPE type;
+    union {
+        FWD* forward;
+        RGT* right;
+    } instruction;
+    struct INSLST* next;
 }INSLST;
 
 
 void parsePROG(PROG* p);
 INSLST* parseINSLST(PROG* p);
+FWD* parseFWD(PROG* p);
+RGT* parseRGT(PROG* p);
+
+int main(void)
+{
+
+    PROG* P = (PROG*)malloc(sizeof(PROG));
+    P->current_count = 0;
+
+    if (P == NULL){
+        fprintf(stderr, "Memory allocation failure");
+        return 1;
+    }
+
+    int i = 0;
+    while (scanf("%s", P->input[i]) == 1){
+        i++;
+    }
+    parsePROG(P);
+    printf("PARSED OKAY");
+    free(P);
+
+    return 0;
+}
 
 void parsePROG(PROG* p){
 
-if (p->input[p->current_count] != "START")
+if (strcmp(p->input[p->current_count], "START") != 0)
 {
-    return fprintf(stderr, "Expected a START at the start of the function");
+    fprintf(stderr, "Expected a START at the start of the function");
+    exit(1);
 }
 
 p->current_count++;
+parseINSLST(p);
 
 }
 
 INSLST* parseINSLST(PROG* p)
 {
 
+if (strcmp(p->input[p->current_count], "END") != 0) {
+    fprintf(stderr, "PROGRAMME END");
+    return NULL;
+}
 
+else {
+INSLST* ins_list = (INSLST*)malloc(sizeof(INSLST));
+if(ins_list == NULL){
+    return NULL;
+}
+//FORWARD INSTRUCTION
+if (strcmp(p->input[p->current_count], "FORWARD") == 0) {
+    ins_list->type = INS_FWD;
+    ins_list->instruction.forward = parseFWD(p);
+}
+// RIGHT INSTRUCTION
+else (strcmp(p->input[p->current_count], "RIGHT")) {
+    ins_list->type = INS_FWD;
+    ins_list->instruction.right = parseRGT(p);
+}
+
+p.current_count++;
+ins_list->next = parseINSLST(p);
+
+return ins_list;
+}
 
 }
 
 
 
-int main(void)
+FWD* parseFWD(PROG* p)
 {
-    return 0;
+    FWD* fwd_ins = (FWD*)malloc(sizeof(FWD));
+    fwd_ins->type = INS_FWD;
+    // look at the next token containing the NUM
+    p->current_count++;
+
+   if (isdigit((p->input[p->current_count]))) {
+        if (sscanf(p->input[p->current_count], "%lf", &fwd_ins->number) == 1) {
+        //move to the next token:
+        p->current_count++;
+        return fwd_ins;
+    }
+
+   }
+
 }
