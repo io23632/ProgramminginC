@@ -109,20 +109,19 @@ if (strcmp(p->input[p->current_count], "FORWARD") == 0) {
     ins_list->instruction.forward = parseFWD(p);
 }
 // RIGHT INSTRUCTION
-else (strcmp(p->input[p->current_count], "RIGHT")) {
+if (strcmp(p->input[p->current_count], "RIGHT")) {
     ins_list->type = INS_FWD;
     ins_list->instruction.right = parseRGT(p);
 }
 
-p.current_count++;
+p->current_count++;
 ins_list->next = parseINSLST(p);
 
 return ins_list;
+free(ins_list);
 }
 
 }
-
-
 
 FWD* parseFWD(PROG* p)
 {
@@ -130,14 +129,18 @@ FWD* parseFWD(PROG* p)
     fwd_ins->type = INS_FWD;
     // look at the next token containing the NUM
     p->current_count++;
-
+    // if the next number is a digit 
    if (isdigit((p->input[p->current_count]))) {
         if (sscanf(p->input[p->current_count], "%lf", &fwd_ins->number) == 1) {
         //move to the next token:
         p->current_count++;
         return fwd_ins;
     }
-
+    else {
+        fprintf(stderr, "Expected a Valid number after instructions");
+        return NULL;
+    }
+    // Add code for interpreter:
    }
-
+free (fwd_ins); // do I need to free it here or can I free the PROG structure in main which will then free FWD?
 }

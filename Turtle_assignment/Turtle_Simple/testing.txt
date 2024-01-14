@@ -2,3 +2,31 @@
 // START: 
 I started by defining the data strucutures I needed for my parse, the various structs that I would need. I realised early on that I can utalise the use of a union in INS
 becuase INS either a FWD OR RGT instruction 
+
+Another issue I came across was the use of a union was the due a fault in my program struture:
+
+My initial structure looked like this: 
+typedef struct PROG{
+    char input[MAXTOKENSIZE][MAXTOKENSIZE];
+    int current_count;
+
+}PROG;
+ This was useful because I could keep a tract of where I am in the grammar using the current_count counter
+ however, I defined a char input array for the grammar which meant that it would be difficult to parse both 
+ numeric values and string values e.g. FORWARD 10 
+
+ So using a union I changed the lay out of my struct:
+
+
+typedef union Token{
+    char str[MAXTOKENSIZE]
+    double num
+}Token
+
+
+
+ typedef struct PROG{
+    Token input[MAXTOKENSIZE];
+    int current_count;
+
+}PROG;
