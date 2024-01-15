@@ -4,9 +4,10 @@
 GRAMMAR to parse:
 <PROG> ::= "START" <INSLST>
 <INSLST> ::= "END" | <INS> <INSLST>
-<INS> ::= <FWD> | <RGT>
-<FWD> ::= "FORWARD" <NUM>
-<RGT> ::= "RIGHT" <NUM>
+<INS> ::= <FWD> | <RGT> | <COL>
+<FWD> ::= "FORWARD" <VARNUM>
+<RGT> ::= "RIGHT" <VARNUM>
+<COL> ::= "COLOUR" <VAR> | "COLOUR" <WORD>
 <NUM> ::= 10 or -17.99 etc.
 */
 
