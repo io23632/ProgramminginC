@@ -79,7 +79,7 @@ void parsePROG(prog* p)
 {
     
     // Check if the first token is start:
-    if (strcmp((&p->input->str[p->current_count]), "START") != 0){
+    if (strcmp((p->input[p->current_count].str), "START") != 0){
         fprintf(stderr, "EXPECTED A START");
         exit(1);
     }
@@ -93,8 +93,8 @@ void parsePROG(prog* p)
 
 INSLST* parseINSLST(prog* p)
 {
-    if (strcmp(&p->input->str[p->current_count], "END") == 0){
-        fprintf(stderr, "Programe finished");
+    if (strcmp(p->input[p->current_count].str, "END") == 0){
+        printf("Programe finished");
         return NULL;
     }
     // create a INS LST:
@@ -132,9 +132,11 @@ FWD* parseFWD(prog* p)
 {
 
 FWD* fwd_ins = (FWD*)malloc(sizeof(FWD));
+
 if (fwd_ins == NULL) {
     return NULL;
 }
+
 fwd_ins->type = INS_FWD;
 p->current_count++;
 
@@ -146,11 +148,11 @@ if (isNUMBER(p->input[p->current_count].str)) {
 }
 
 else {
-    fprintf(stderr, "Error: Expected a number after 'FORWARD'\n");
-   
-} 
 
-free(fwd_ins); // Free the allocated memory in case of error
+    fprintf(stderr, "Error: Expected a number after 'FORWARD'\n");
+    free(fwd_ins); // Free the allocated memory in case of error
+    return NULL;
+} 
 return NULL;
 }
 
@@ -174,9 +176,10 @@ if (isNUMBER(p->input[p->current_count].str)) {
 else {
 
     fprintf(stderr, "Error: Expected a number after 'FORWARD'\n");
+    free(rgt_ins); // Free the allocated memory in case of error
+    return NULL;
 }
-free(rgt_ins); // Free the allocated memory in case of error
-return NULL;
+
 }
 
 bool isNUMBER(const char* str){
@@ -186,3 +189,7 @@ bool isNUMBER(const char* str){
 }
 
 
+free(prog* p)
+{
+
+}
