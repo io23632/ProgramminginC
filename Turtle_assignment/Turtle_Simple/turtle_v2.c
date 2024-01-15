@@ -64,12 +64,27 @@ int main(void)
         return -1;
     }
 
-    int i = 0;
-    while (scanf("%s", p->input[i].str) == 1) {
-        i++;
-    }
+    // int i = 0;
+    // while (scanf("%s", p->input[i].str) == 1) {
+    //     i++;
+    // }
+    // parsePROG(p);
+    // printf("PARSED OKAY");
+
+
+
+    strcpy(p->input[0].str, "START");
+    
+    strcpy(p->input[1].str, "FORWARD");
+   
+    strcpy(p->input[2].str, "10");
+   
+    strcpy(p->input[3].str, "END");
+  
+    p->current_count = 0;
+
     parsePROG(p);
-    printf("PARSED OKAY");
+
     free(p);
 
     return 0;
@@ -98,7 +113,7 @@ INSLST* parseINSLST(prog* p)
         return NULL;
     }
     // create a INS LST:
-    INSLST* ins_list = (INSLST*)malloc(sizeof(INSLST));
+    INSLST* ins_list = (INSLST*)malloc(sizeof(INSLST)); /// Do I need to free INSLST or will that will willl free(p) in main achieve the same result?
     // FORWARD INSTRUCTION
 
     if (ins_list == NULL){
@@ -175,7 +190,7 @@ if (isNUMBER(p->input[p->current_count].str)) {
 
 else {
 
-    fprintf(stderr, "Error: Expected a number after 'FORWARD'\n");
+    fprintf(stderr, "Error: Expected a number after 'RIGHT'\n");
     free(rgt_ins); // Free the allocated memory in case of error
     return NULL;
 }
@@ -186,10 +201,4 @@ bool isNUMBER(const char* str){
 
     double temp;
     return sscanf(str, "%lf", &temp) == 1;
-}
-
-
-free(prog* p)
-{
-
 }
