@@ -30,3 +30,6 @@ typedef union Token{
     int current_count;
 
 }PROG;
+
+
+// I also decided to make a change from using a linked list,to a simple array to save me having to free up the memory allocated - could be useful for extention 

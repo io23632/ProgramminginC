@@ -64,27 +64,11 @@ int main(void)
         return -1;
     }
 
-    // int i = 0;
-    // while (scanf("%s", p->input[i].str) == 1) {
-    //     i++;
-    // }
-    // parsePROG(p);
-    // printf("PARSED OKAY");
-
-
-
-    strcpy(p->input[0].str, "START");
-    
-    strcpy(p->input[1].str, "FORWARD");
-   
-    strcpy(p->input[2].str, "10");
-   
-    strcpy(p->input[3].str, "END");
-  
-    p->current_count = 0;
-
+    int i = 0;
+    while (scanf("%s", p->input[i].str) == 1) {
+        i++;
+    }
     parsePROG(p);
-
     free(p);
 
     return 0;
@@ -109,7 +93,7 @@ void parsePROG(prog* p)
 INSLST* parseINSLST(prog* p)
 {
     if (strcmp(p->input[p->current_count].str, "END") == 0){
-        printf("Programe finished");
+        printf("Programe finished\n");
         return NULL;
     }
     // create a INS LST:
