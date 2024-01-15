@@ -123,13 +123,11 @@ INSLST* parseINSLST(prog* p)
 
     if (strcmp(p->input[p->current_count].str, "FORWARD") == 0) {
         ins_list->instruction.forward = parseFWD(p);
-         p->current_count++;
         ins_list->next = parseINSLST(p);
     }
     // RIGHT INSTRUCTION
     else if (strcmp(p->input[p->current_count].str, "RIGHT") == 0) {
         ins_list->instruction.right = parseRGT(p);
-         p->current_count++;
         ins_list->next = parseINSLST(p);
     }
     //INVALID TOKEN
@@ -143,8 +141,7 @@ INSLST* parseINSLST(prog* p)
 
 }
 
-FWD* parseFWD(prog* p)
-{
+FWD* parseFWD(prog* p){
 
 FWD* fwd_ins = (FWD*)malloc(sizeof(FWD));
 
@@ -156,10 +153,11 @@ fwd_ins->type = INS_FWD;
 p->current_count++;
 
 if (isNUMBER(p->input[p->current_count].str)) {
-    if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1) {
+    if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1)
         p->current_count++;
         return fwd_ins;
-    }
+    
+
 }
 
 else {
@@ -168,7 +166,7 @@ else {
     free(fwd_ins); // Free the allocated memory in case of error
     return NULL;
 } 
-return NULL;
+
 }
 
 RGT* parseRGT(prog* p){
