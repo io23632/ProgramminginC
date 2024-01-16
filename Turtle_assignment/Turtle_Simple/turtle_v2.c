@@ -65,7 +65,9 @@ int main(void)
     }
 
     int i = 0;
-    while (scanf("%s", p->input[i].str) == 1) {
+    while (scanf("%s", p->input[i].str)) {
+        if (strcmp(p->input[p->current_count].str, "END") == 0)
+        break;
         i++;
     }
     parsePROG(p);
@@ -94,7 +96,7 @@ void parsePROG(prog* p)
 INSLST* parseINSLST(prog* p)
 {
     if (strcmp(&p->input->str[p->current_count], "END") == 0){
-        fprintf(stderr, "Programe finished");
+        printf("Programe finished");
         return NULL;
     }
     // create a INS LST:
@@ -140,6 +142,11 @@ p->current_count++;
 
 if (isNUMBER(p->input[p->current_count].str)) {
     if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1) {
+        
+        for (int i = 0; i  < fwd_ins->number; i++) {
+            printf("F");
+        }
+
         p->current_count++;
         return fwd_ins;
     }
