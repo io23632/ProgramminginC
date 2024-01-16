@@ -64,11 +64,38 @@ void pretty_printer(Expr* expr)
     printf("(");
     switch (expr->kind){
         case VAR: {
-            printf("")
+            printf("%c", expr->data.var);
         }
-    }
-
-    
+        case LITERAL: {
+            printf("%lf", expr->data.lit);
+        }
+        case binary_expression: {
+           Bi_Op bi_expr  = (expr->data.bin_expr); 
+            pretty_printer(bi_expr.lhs);
+            switch (bi_expr.op) {
+                case B_PLUS: {
+                    printf("+");
+                }
+                case B_MINUS: {
+                    printf("-");
+                }
+                case B_TIMES: {
+                    printf("*");
+                }
+                case B_DIVIDE: {
+                    printf("/");
+                }
+            }
+            pretty_printer(bi_expr.rhs);
+        }
+        case uni_expression: {
+            Uni_Op uni_expr = expr->data.uni_expr;
+            switch (uni_expr.op) {
+                default: printf("-");
+            }
+            pretty_printer(uni_expr.expression);
+            
+        }
 }
 
 
