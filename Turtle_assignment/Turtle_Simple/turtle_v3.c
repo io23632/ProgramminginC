@@ -13,7 +13,7 @@ GRAMMAR to parse:
 
 <PROG> ::= "START" <INSLST>
 <INSLST> ::= "END" | <INS> <INSLST>
-<INS> ::= <FWD> | <RGT> | <COL>
+<INS> ::= <FWD> | <RGT> | <COL> | <SET>
 <FWD> ::= "FORWARD" <VARNUM>
 <RGT> ::= "RIGHT" <VARNUM>
 <COL> ::= "COLOUR" <VAR> | "COLOUR" <WORD>
@@ -22,7 +22,7 @@ GRAMMAR to parse:
 <LTR> ::= A, B, ....... Z
 <NUM> ::= 10 or -17.99 etc.
 <WORD> ::= "RED", "BLUE" , "HELLO!" or "178"
-<SET> ::= "("
+<SET> ::= "SET" <LTR> "(" <PFIX>
 <ITEMS> ::= "}" | <ITEM><ITEMS>
 <ITEM> ::= <VARNUM> | <WORD>
 <PFIX> ::= ")" | <OP><PFIX> | <VARNUM><PFIX>
@@ -34,7 +34,7 @@ typedef enum{
     INS_FWD,
     INS_RGT,
     INS_COL,
-    INS_POSTFIX,
+    INS_SET,
 }INSTYPE;
 
 typedef enum{
@@ -46,12 +46,27 @@ typedef enum{
 
 typedef double NUM;
 typedef char LTR;
-typedef const char* WORD;
+
 
 typedef struct PROG{
     char input[MAXTOKENSIZE][MAXTOKENSIZE];
     int current_count;
 }prog;
+
+typedef union VARNUM{
+    LTR variable;
+    NUM number;
+}VARNUM;
+
+typedef struct WORD {
+    char* str;
+}WORD;
+
+
+typedef struct SET{
+    INSTYPE type;
+    LTR letter;
+}SET;
 
 typedef struct COL{
     INSTYPE type;
@@ -71,18 +86,12 @@ typedef struct FWD{
     VARNUM varnum;
 }FWD;
 
-typedef union VARNUM{
-    LTR variable;
-    NUM number;
-}VARNUM;
-
 typedef struct PFix{
     INSTYPE type;
     union {
         OP symbol;
         VARNUM varnum;
     }precurse;
-
 }PFix;
 
 
@@ -93,9 +102,12 @@ void parseINSLST(prog* p);
 void parsePOSTFIX(prog* p);
 bool isNUMBER(const char* str);
 bool isVARIABLE(const char* str);
+bool isOperation(const char* str);
+bool isLetter(const char* str);
 FWD parseFWD(prog* p);
 RGT parseRGT(prog* p);
 COL parseCOL(prog* p);
+SET parseSET(prog* p);
 
 void test(void);
 
@@ -163,8 +175,8 @@ void parseINSLST(prog* p)
         parseINSLST(p);
     }
 
-    else if (strcmp(p->input[p->current_count], "(") == 0 ) {
-        parsePOSTFIX(p);
+    else if (strcmp(p->input[p->current_count], "SET") == 0 ) {
+        parseSET(p);
         parseINSLST(p);
 
     }
@@ -243,20 +255,81 @@ COL parseCOL(prog* p)
     
     // Check if it is a word:
     else {
-        sscanf(p->input[p->current_count], "%s", &col_ins.COL_postfix.word);
+        sscanf(p->input[p->current_count], "%s", col_ins.COL_postfix.word.str);
         p->current_count++;
         return col_ins;
     }
 }
 
+SET parseSET(prog* p)
+{
+
+SET set; 
+set.type = INS_SET;
+p->current_count++;
+
+//parse the letter and move on to parsePFIX
+if (isLetter(p->input[p->current_count])) {
+    p->current_count++;
+    if(strcmp(p->input[p->current_count], "(") == 0)
+    parsePOSTFIX(p);
+}
+
+else {
+    fprintf(stderr, "\nexpected a ( at the begeinng of statement %s:    ", p->input[p->current_count]);
+    exit(1);
+}
+
+return set;
+
+}
 
 
+void parsePOSTFIX(prog* p)
+{
+    PFix pfix;
+    p->current_count++;
 
 
+    if (strcmp(p->input[p->current_count], ")") == 0) {
+        exit(1);
+    }
+
+    // if p.input[p.current_count] == number
+    else if (isNUMBER(p->input[p->current_count])) {
+        p->current_count++;
+        parsePOSTFIX(p);
+    }
+
+    // if p.input[p.current_count] == variable 
+    else if (isVARIABLE(p->input[p->current_count])) {
+        p->current_count++;
+        parsePOSTFIX(p);
+    }
+
+    // if p.input[p.current_count] == operation
+    else if (isOperation(p->input[p->current_count])) {
+        p->current_count++;
+        parsePOSTFIX(p);
+    }
+
+    else {
+        fprintf(stderr, "expected valid token for postfix expression at %s    ", p->input[p->current_count]);
+        exit(1);
+    }
+
+}
 
 
+bool isOperation(const char* str)
+{
 
+if (((strcmp(str, "+") == 0)|| (strcmp(str, "-") == 0)||(strcmp(str, "*") == 0)|| (strcmp(str, "/") == 0))) {
+    return true;
+}
+return false;
 
+}
 
 bool isNUMBER(const char* str){
 
@@ -277,16 +350,45 @@ if (str[0] == '$') {
 return false;
 }
 
+bool isLetter(const char* str)
+{
+    
+    for (int i = 0; i < str[i] != '\0'; i++) 
+    {
+        if ((isupper(str[i]) && str[i] >= 65 && str[i] <= 95)){
+            return true;
+        }
+    }
+    
+    return false;
+}
 
-void test(void){
+
+
+void test(void) 
+{
 
     
     assert(isNUMBER("10") == true);
     assert(isNUMBER("17.9987") == true);
+
     assert(isVARIABLE("$A") == true);
     assert(isVARIABLE("A") == false);
     assert(isVARIABLE("$a") == false);
     assert(isVARIABLE("$Z") == true);
+
+    assert(isOperation("+") == true);
+    assert(isOperation("/") == true);
+    assert(isOperation("*") == true);
+    assert(isOperation("-") == true);
     
 
+    assert(isLetter("A") == true);
+    assert(isLetter("a") == false); 
+    assert(isLetter("B") == true);
+    assert(isLetter("b") == false);
+    assert(isLetter("Y") == true);
+    assert(isLetter("y") == false);
+    assert(isLetter("U") == true);
+    assert(isLetter("u") == false);
 }
