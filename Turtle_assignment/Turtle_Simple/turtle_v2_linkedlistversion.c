@@ -71,7 +71,6 @@ int main(void)
         i++;
     }
     parsePROG(p);
-    printf("PARSED OKAY");
     free(p);
 
     return 0;
@@ -81,7 +80,7 @@ void parsePROG(prog* p)
 {
     
     // Check if the first token is start:
-    if (strcmp((&p->input->str[p->current_count]), "START") != 0){
+    if (strcmp((p->input[p->current_count].str), "START") != 0){
         fprintf(stderr, "EXPECTED A START");
         exit(1);
     }
@@ -95,12 +94,17 @@ void parsePROG(prog* p)
 
 INSLST* parseINSLST(prog* p)
 {
+<<<<<<< HEAD:Turtle_assignment/Turtle_Simple/turtle_v2.c
     if (strcmp(&p->input->str[p->current_count], "END") == 0){
         printf("Programe finished");
+=======
+    if (strcmp(p->input[p->current_count].str, "END") == 0){
+        printf("Programe finished\n");
+>>>>>>> 5de025166114e5e7c976ad2a8f700af6a2d8f3c9:Turtle_assignment/Turtle_Simple/turtle_v2_linkedlistversion.c
         return NULL;
     }
     // create a INS LST:
-    INSLST* ins_list = (INSLST*)malloc(sizeof(INSLST));
+    INSLST* ins_list = (INSLST*)malloc(sizeof(INSLST)); /// Do I need to free INSLST or will that will willl free(p) in main achieve the same result?
     // FORWARD INSTRUCTION
 
     if (ins_list == NULL){
@@ -110,13 +114,11 @@ INSLST* parseINSLST(prog* p)
 
     if (strcmp(p->input[p->current_count].str, "FORWARD") == 0) {
         ins_list->instruction.forward = parseFWD(p);
-         p->current_count++;
         ins_list->next = parseINSLST(p);
     }
     // RIGHT INSTRUCTION
     else if (strcmp(p->input[p->current_count].str, "RIGHT") == 0) {
         ins_list->instruction.right = parseRGT(p);
-         p->current_count++;
         ins_list->next = parseINSLST(p);
     }
     //INVALID TOKEN
@@ -130,35 +132,41 @@ INSLST* parseINSLST(prog* p)
 
 }
 
-FWD* parseFWD(prog* p)
-{
+FWD* parseFWD(prog* p){
 
 FWD* fwd_ins = (FWD*)malloc(sizeof(FWD));
+
 if (fwd_ins == NULL) {
     return NULL;
 }
+
 fwd_ins->type = INS_FWD;
 p->current_count++;
 
 if (isNUMBER(p->input[p->current_count].str)) {
+<<<<<<< HEAD:Turtle_assignment/Turtle_Simple/turtle_v2.c
     if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1) {
         
         for (int i = 0; i  < fwd_ins->number; i++) {
             printf("F");
         }
 
+=======
+    if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1)
+>>>>>>> 5de025166114e5e7c976ad2a8f700af6a2d8f3c9:Turtle_assignment/Turtle_Simple/turtle_v2_linkedlistversion.c
         p->current_count++;
         return fwd_ins;
-    }
+    
+
 }
 
 else {
+
     fprintf(stderr, "Error: Expected a number after 'FORWARD'\n");
-   
+    free(fwd_ins); // Free the allocated memory in case of error
+    return NULL;
 } 
 
-free(fwd_ins); // Free the allocated memory in case of error
-return NULL;
 }
 
 RGT* parseRGT(prog* p){
@@ -180,10 +188,11 @@ if (isNUMBER(p->input[p->current_count].str)) {
 
 else {
 
-    fprintf(stderr, "Error: Expected a number after 'FORWARD'\n");
+    fprintf(stderr, "Error: Expected a number after 'RIGHT'\n");
+    free(rgt_ins); // Free the allocated memory in case of error
+    return NULL;
 }
-free(rgt_ins); // Free the allocated memory in case of error
-return NULL;
+
 }
 
 bool isNUMBER(const char* str){
@@ -191,5 +200,3 @@ bool isNUMBER(const char* str){
     double temp;
     return sscanf(str, "%lf", &temp) == 1;
 }
-
-

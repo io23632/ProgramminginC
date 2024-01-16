@@ -1,0 +1,4 @@
+START
+    FORWARD 5
+    RIGHT 45
+END

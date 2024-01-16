@@ -1,9 +1,35 @@
-// What are you doing what is your thought process: 
-// START: 
-I started by defining the data strucutures I needed for my parse, the various structs that I would need. I realised early on that I can utalise the use of a union in INS
-becuase INS either a FWD OR RGT instruction 
+//what is your thought process: 
 
-Another issue I came across was the use of a union was the due a fault in my program struture:
+///CONTENT
+
+//METHODOLOGY
+// STRUCTUERS 
+// TESTING
+
+
+
+
+// New things I learnt
+
+//////
+
+//METHODOLOGY
+
+> I started off trying to parse the simple grammar in the exercise given
+> I added extention like COL WORD and VARNUM next and added unions to represent OR cases in the grammar
+
+
+// STRUCTURERS
+
+> I started by defining the data strucutures I needed for my parse, the various structs that I would need. I realised early on that I can utalise the use of a unions 
+whereever there was an explicit OR instruction e.g. COLOUR could be a VARNUM OR a WORD
+
+> I started off by by having complex structs, where each non-terminal had a struct of its own, however, this got complicated quite quick and I realised not all non-terminals 
+needed a struct and could instead be defined in functions.
+
+> I also stepped away from using Linked Lists, as this would require freeing up memory and could be better used as part of a extention 
+
+>I found i was better off utalising the program struct from the noughtand1s was also very useful to keep a track of which instnruction I was using:
 
 My initial structure looked like this: 
 typedef struct PROG{
@@ -11,22 +37,22 @@ typedef struct PROG{
     int current_count;
 
 }PROG;
- This was useful because I could keep a tract of where I am in the grammar using the current_count counter
- however, I defined a char input array for the grammar which meant that it would be difficult to parse both 
- numeric values and string values e.g. FORWARD 10 
 
- So using a union I changed the lay out of my struct:
-
-
-typedef union Token{
-    char str[MAXTOKENSIZE]
-    double num
-}Token
+>
 
 
 
- typedef struct PROG{
-    Token input[MAXTOKENSIZE];
-    int current_count;
+// TESTING
 
-}PROG;
+> I started the assertion tests early on, however found testing parse functions via assertions a bit tricky, will come back to this, 
+
+> One thing I am having trouble getting to work is : assert assert(isVARIABLE("$ABCZ") == true); variables with multiple inputs, my isVARIABLE function should pick 
+this up, but the logic does not seem to be working. 
+
+
+
+
+
+// New things I learnt
+
+> cannot use switch case where the expression is a string therefore the INSLST function has to be a if else ladder 
