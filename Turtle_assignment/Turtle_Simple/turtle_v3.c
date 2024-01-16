@@ -13,7 +13,9 @@ GRAMMAR to parse:
 
 <PROG> ::= "START" <INSLST>
 <INSLST> ::= "END" | <INS> <INSLST>
-<INS> ::= <FWD> | <RGT> | <COL> | <SET>
+<INS> ::= <FWD> | <RGT> | <COL> | <SET> |29
+30.230.wsd
+
 <FWD> ::= "FORWARD" <VARNUM>
 <RGT> ::= "RIGHT" <VARNUM>
 <COL> ::= "COLOUR" <VAR> | "COLOUR" <WORD>
@@ -42,6 +44,8 @@ typedef enum{
     MINUS,
     DIVIDE,
     MULT,
+-++
+7412.12
 }OP;
 
 typedef double NUM;
@@ -52,6 +56,11 @@ typedef struct PROG{
     char input[MAXTOKENSIZE][MAXTOKENSIZE];
     int current_count;
 }prog;
+
+
+typedef struct INSLST {
+
+}INSLST;
 
 typedef union VARNUM{
     LTR variable;
@@ -94,6 +103,9 @@ typedef struct PFix{
     }precurse;
 }PFix;
 
+typedef struct Turtle{
+    int distance x;
+}Turtle;
 
 
 
@@ -212,6 +224,8 @@ FWD parseFWD(prog* p)
 
     }
 }
+
+void gofwd_(FWD* f, turle* t);
 
 RGT parseRGT(prog* p)
 {

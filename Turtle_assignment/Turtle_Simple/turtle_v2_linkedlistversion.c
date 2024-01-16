@@ -33,25 +33,23 @@ typedef struct PROG{
 
 typedef struct FWD
 {
-    INSTYPE type;
     NUM number;   
 }FWD;
 
 typedef struct RGT{
-    INSTYPE type;
     NUM number;
 }RGT;
 
 typedef struct INSLST {
+    INSTYPE type;
     union {
-        FWD* forward;
-        RGT* right;
+        FWD forward;
+        RGT right;
     } instruction;
     struct INSLST* next;
 }INSLST;
 
-
-void parsePROG(prog* p);
+INSLST* parsePROG(prog* p);
 INSLST* parseINSLST(prog* p);
 bool isNUMBER(const char* str);
 FWD* parseFWD(prog* p);
@@ -70,13 +68,15 @@ int main(void)
         break;
         i++;
     }
-    parsePROG(p);
+    INSLST* result = parsePROG(p);
+
+    free(result);
     free(p);
 
     return 0;
 }
 
-void parsePROG(prog* p)
+INSLST* parsePROG(prog* p)
 {
     
     // Check if the first token is start:
@@ -87,20 +87,15 @@ void parsePROG(prog* p)
 
     else {
         p->current_count++;
-        parseINSLST(p);
+        return parseINSLST(p);
     }
 
 }
 
 INSLST* parseINSLST(prog* p)
 {
-<<<<<<< HEAD:Turtle_assignment/Turtle_Simple/turtle_v2.c
-    if (strcmp(&p->input->str[p->current_count], "END") == 0){
-        printf("Programe finished");
-=======
     if (strcmp(p->input[p->current_count].str, "END") == 0){
         printf("Programe finished\n");
->>>>>>> 5de025166114e5e7c976ad2a8f700af6a2d8f3c9:Turtle_assignment/Turtle_Simple/turtle_v2_linkedlistversion.c
         return NULL;
     }
     // create a INS LST:
@@ -144,16 +139,13 @@ fwd_ins->type = INS_FWD;
 p->current_count++;
 
 if (isNUMBER(p->input[p->current_count].str)) {
-<<<<<<< HEAD:Turtle_assignment/Turtle_Simple/turtle_v2.c
     if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1) {
         
         for (int i = 0; i  < fwd_ins->number; i++) {
             printf("F");
         }
 
-=======
     if (sscanf(p->input[p->current_count].str, "%lf", &fwd_ins->number) == 1)
->>>>>>> 5de025166114e5e7c976ad2a8f700af6a2d8f3c9:Turtle_assignment/Turtle_Simple/turtle_v2_linkedlistversion.c
         p->current_count++;
         return fwd_ins;
     
