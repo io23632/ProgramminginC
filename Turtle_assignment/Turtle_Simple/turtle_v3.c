@@ -13,9 +13,7 @@ GRAMMAR to parse:
 
 <PROG> ::= "START" <INSLST>
 <INSLST> ::= "END" | <INS> <INSLST>
-<INS> ::= <FWD> | <RGT> | <COL> | <SET> |29
-30.230.wsd
-
+<INS> ::= <FWD> | <RGT> | <COL> | <SET> | <LOOP>
 <FWD> ::= "FORWARD" <VARNUM>
 <RGT> ::= "RIGHT" <VARNUM>
 <COL> ::= "COLOUR" <VAR> | "COLOUR" <WORD>
@@ -44,8 +42,6 @@ typedef enum{
     MINUS,
     DIVIDE,
     MULT,
--++
-7412.12
 }OP;
 
 typedef double NUM;
@@ -56,11 +52,6 @@ typedef struct PROG{
     char input[MAXTOKENSIZE][MAXTOKENSIZE];
     int current_count;
 }prog;
-
-
-typedef struct INSLST {
-
-}INSLST;
 
 typedef union VARNUM{
     LTR variable;
@@ -103,15 +94,8 @@ typedef struct PFix{
     }precurse;
 }PFix;
 
-typedef struct Turtle{
-    int distance x;
-}Turtle;
-
-
-
 void parsePROG(prog* p);
 void parseINSLST(prog* p);
-void parsePOSTFIX(prog* p);
 bool isNUMBER(const char* str);
 bool isVARIABLE(const char* str);
 bool isOperation(const char* str);
@@ -120,6 +104,7 @@ FWD parseFWD(prog* p);
 RGT parseRGT(prog* p);
 COL parseCOL(prog* p);
 SET parseSET(prog* p);
+PFix parsePOSTFIX(prog* p);
 
 void test(void);
 
@@ -225,7 +210,9 @@ FWD parseFWD(prog* p)
     }
 }
 
-void gofwd_(FWD* f, turle* t);
+
+// what an interpreter function might look like for fwd :
+//void gofwd_(FWD* f, turle* t);
 
 RGT parseRGT(prog* p)
 {
@@ -298,15 +285,13 @@ return set;
 
 }
 
-
-void parsePOSTFIX(prog* p)
+PFix parsePOSTFIX(prog* p)
 {
     PFix pfix;
     p->current_count++;
 
-
     if (strcmp(p->input[p->current_count], ")") == 0) {
-        exit(1);
+        return pfix;
     }
 
     // if p.input[p.current_count] == number
@@ -332,6 +317,7 @@ void parsePOSTFIX(prog* p)
         exit(1);
     }
 
+return pfix;
 }
 
 
@@ -376,8 +362,6 @@ bool isLetter(const char* str)
     
     return false;
 }
-
-
 
 void test(void) 
 {
