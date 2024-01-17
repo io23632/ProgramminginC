@@ -17,7 +17,7 @@
 
 > I started off trying to parse the simple grammar in the exercise given
 > I added extention like COL WORD and VARNUM next and added unions to represent OR cases in the grammar
-
+> For the ITEMS grammar I am assuming it will either be a number or a word being looped over whithin the list, 
 
 // STRUCTURERS
 

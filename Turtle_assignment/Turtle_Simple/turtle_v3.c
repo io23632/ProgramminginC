@@ -37,6 +37,7 @@ typedef enum{
     INS_RGT,
     INS_COL,
     INS_SET,
+    INS_LST,
 }INSTYPE;
 
 typedef enum{
@@ -64,6 +65,13 @@ typedef struct WORD {
     char* str;
 }WORD;
 
+typedef struct LST{
+    INSTYPE type;
+    union {
+        VARNUM varnum;
+        WORD word;
+    }ITEM;
+}LST;
 
 typedef struct SET{
     INSTYPE type;
@@ -107,7 +115,7 @@ RGT parseRGT(prog* p);
 COL parseCOL(prog* p);
 SET parseSET(prog* p);
 PFix parsePOSTFIX(prog* p);
-
+LST parseLST(prog* p);
 void test(void);
 
 int main(void)
@@ -258,7 +266,7 @@ COL parseCOL(prog* p)
     
     // Check if it is a word:
     else {
-        sscanf(p->input[p->current_count], "%s", col_ins.COL_postfix.word.str);
+       if (sscanf(p->input[p->current_count], "%s", col_ins.COL_postfix.word.str));
         p->current_count++;
         return col_ins;
     }
@@ -322,6 +330,46 @@ PFix parsePOSTFIX(prog* p)
 return pfix;
 }
 
+//LST is called by LOOP, like PFix is called by SET
+LST parseLST(prog* p)
+{
+    LST list;
+    list.type = INS_LST;
+    p->current_count++;
+
+    if (strcmp(p->input[p->current_count], "}") == 0) {
+        return list;
+    }
+
+
+    if (strcmp(p->input[p->current_count], "{") != 0) {
+        fprintf(stderr, "expected a { sybmbol for List initilisation\n");
+        exit(1);
+    }
+    // step inside the LIST
+    p->current_count++;
+
+    //If it is a number;
+    if (isNUMBER(p->input[p->current_count])) {
+        if (sscanf(p->input[p->current_count], "%lf", &list.ITEM.varnum.number));
+        p->current_count++;
+        parseLST(p);
+    }
+
+    // if it is a word;
+    else if (sscanf(p->input[p->current_count], "%s", &list.ITEM.word.str)) {
+        p->current_count++;
+        parseLST(p);
+
+    }
+
+    else {
+        fprintf(stderr, "expeted a valid token in list");
+        exit(1);
+    }
+
+    
+}
 
 bool isOperation(const char* str)
 {
@@ -354,15 +402,17 @@ return false;
 
 bool isLetter(const char* str)
 {
-    
-    for (int i = 0; i < str[i] != '\0'; i++) 
+    if (str[0] != '$')
+    {
+        for (int i = 0; i < str[i] != '\0'; i++) 
     {
 
         if ((isupper(str[i]) && str[i] >= 65 && str[i] <= 95)){
             return true;
         }
     }
-    
+
+    }
     return false;
 }
 
