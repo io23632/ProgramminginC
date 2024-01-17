@@ -17,12 +17,14 @@ GRAMMAR to parse:
 <FWD> ::= "FORWARD" <VARNUM>
 <RGT> ::= "RIGHT" <VARNUM>
 <COL> ::= "COLOUR" <VAR> | "COLOUR" <WORD>
+<SET> ::= "SET" <LTR> "(" <PFIX>
+<LOOP> ::= "LOOP" <LTR> "OVER" <LST> <INLST>
 <VARNUM> ::= <VAR> | <NUM>
 <VAR> ::= $<LTR>
 <LTR> ::= A, B, ....... Z
 <NUM> ::= 10 or -17.99 etc.
 <WORD> ::= "RED", "BLUE" , "HELLO!" or "178"
-<SET> ::= "SET" <LTR> "(" <PFIX>
+<LST> ::= "{" <ITEMS>
 <ITEMS> ::= "}" | <ITEM><ITEMS>
 <ITEM> ::= <VARNUM> | <WORD>
 <PFIX> ::= ")" | <OP><PFIX> | <VARNUM><PFIX>
@@ -355,6 +357,7 @@ bool isLetter(const char* str)
     
     for (int i = 0; i < str[i] != '\0'; i++) 
     {
+
         if ((isupper(str[i]) && str[i] >= 65 && str[i] <= 95)){
             return true;
         }
@@ -389,4 +392,5 @@ void test(void)
     assert(isLetter("y") == false);
     assert(isLetter("U") == true);
     assert(isLetter("u") == false);
+    assert(isLetter("$A") == false);
 }
