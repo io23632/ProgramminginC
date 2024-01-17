@@ -275,9 +275,23 @@ COL parseCOL(prog* p)
     
     // Check if it is a word:
     else {
-       col_ins.COL_postfix.word.str = p->input[p->current_count];
-        p->current_count++;
-        return col_ins;
+
+        char* word = p->input[p->current_count];
+
+        if (word[0] == '\"' && word[strlen(word) - 1] == '\"') {
+            word++;
+            word[strlen(word) - 1] = '\0';
+        }
+
+        col_ins.COL_postfix.word.str = strdup(word);
+      
+       if (col_ins.COL_postfix.word.str == NULL) {
+            fprintf(stderr, "Memory allocation failure");
+            exit(1);
+       }
+
+    p->current_count++;
+    return col_ins;
     }
 }
 
