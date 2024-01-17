@@ -202,13 +202,18 @@ FWD parseFWD(prog* p)
 
     // if there is a number following the FORWARD Instruction:
     if (isNUMBER(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%lf", &fwd_ins.varnum.number))
+        if (sscanf(p->input[p->current_count], "%lf", &fwd_ins.varnum.number) != 1) {
+            fprintf(stderr, "Error: Invalid number format after FORWARD\n");
+            exit(1);
+        }
         p->current_count++;
         return fwd_ins;
     }
+
+
     // if there is a variable following the FORWARD Instruction:
     else if (isVARIABLE(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%s", &fwd_ins.varnum.variable))
+        fwd_ins.varnum.variable = p->input[p->current_count][1];
         p->current_count++;
         return fwd_ins;
     }
@@ -233,13 +238,17 @@ RGT parseRGT(prog* p)
 
     // if there is a number following the RIGTH Instruction:
     if (isNUMBER(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%lf", &rgt_ins.varnum.number))
+        if (sscanf(p->input[p->current_count], "%lf", &rgt_ins.varnum.number)) {
+            fprintf(stderr, "Expected a valid token number after RIGHT\n");
+            exit(1);
+        }
         p->current_count++;
         return rgt_ins;
     }
+
     // if there is a variable following the RIGTH Instruction:
     else if (isVARIABLE(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%s", &rgt_ins.varnum.variable))
+        rgt_ins.varnum.variable = p->input[p->current_count][1];
         p->current_count++;
         return rgt_ins;
     }
@@ -259,18 +268,19 @@ COL parseCOL(prog* p)
 
     // Check if it is a variable:
     if (isVARIABLE(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%s", &col_ins.COL_postfix.variable))
+        col_ins.COL_postfix.variable = p->input[p->current_count][1];
         p->current_count++;
         return col_ins;
     }
     
     // Check if it is a word:
     else {
-       if (sscanf(p->input[p->current_count], "%s", col_ins.COL_postfix.word.str));
+       col_ins.COL_postfix.word.str = p->input[p->current_count];
         p->current_count++;
         return col_ins;
     }
 }
+
 
 SET parseSET(prog* p)
 {
@@ -402,18 +412,16 @@ return false;
 
 bool isLetter(const char* str)
 {
-    if (str[0] != '$')
-    {
-        for (int i = 0; i < str[i] != '\0'; i++) 
-    {
-
-        if ((isupper(str[i]) && str[i] >= 65 && str[i] <= 95)){
-            return true;
+    
+    if (isVARIABLE(str)) {
+        return false;
+    }
+    for (int i = 0; i < str[i] != '\0'; i++) {
+        if(!isupper(str[i])) {
+            return false;
         }
     }
-
-    }
-    return false;
+    return true;
 }
 
 void test(void) 
