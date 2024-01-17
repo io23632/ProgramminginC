@@ -40,16 +40,16 @@ typedef enum{
     INS_LST,
 }INSTYPE;
 
-typedef enum{
-    PLUS,
-    MINUS,
-    DIVIDE,
-    MULT,
-}OP;
+// typedef enum{
+//     PLUS,
+//     MINUS,
+//     DIVIDE,
+//     MULT,
+// }OP;
 
 typedef double NUM;
 typedef char LTR;
-
+typedef char Op;
 
 typedef struct PROG{
     char input[MAXTOKENSIZE][MAXTOKENSIZE];
@@ -73,9 +73,18 @@ typedef struct LST{
     }ITEM;
 }LST;
 
+typedef struct PFix{
+    INSTYPE type;
+    union {
+        Op symbol;
+        VARNUM varnum;
+    }precurse;
+}PFix;
+
 typedef struct SET{
     INSTYPE type;
     LTR letter;
+    PFix* pfix;
 }SET;
 
 typedef struct COL{
@@ -96,13 +105,6 @@ typedef struct FWD{
     VARNUM varnum;
 }FWD;
 
-typedef struct PFix{
-    INSTYPE type;
-    union {
-        OP symbol;
-        VARNUM varnum;
-    }precurse;
-}PFix;
 
 void parsePROG(prog* p);
 void parseINSLST(prog* p);
@@ -305,13 +307,23 @@ p->current_count++;
 
 //parse the letter and move on to parsePFIX
 if (isLetter(p->input[p->current_count])) {
+    set.letter = p->input[p->current_count][0];
     p->current_count++;
-    if(strcmp(p->input[p->current_count], "(") == 0)
-    parsePOSTFIX(p);
+
+    if(strcmp(p->input[p->current_count], "(") == 0) {
+        p->current_count++;
+        set.pfix = parsePOSTFIX(p);
+        
+    }
+    
+    else {
+        fprintf(stderr, "expected a ( after letter in SET statement\n");
+        exit(1);
+    }
 }
 
 else {
-    fprintf(stderr, "\nexpected a ( at the begeinng of statement %s:    ", p->input[p->current_count]);
+    fprintf(stderr, "Expected a letter in SET statement\n");
     exit(1);
 }
 
@@ -321,27 +333,33 @@ return set;
 
 PFix parsePOSTFIX(prog* p)
 {
-    PFix pfix;
+    PFix Pfix;
     p->current_count++;
 
     if (strcmp(p->input[p->current_count], ")") == 0) {
-        return pfix;
+        return Pfix;
     }
 
     // if p.input[p.current_count] == number
     else if (isNUMBER(p->input[p->current_count])) {
+        if (sscanf(p->input[p->current_count], "%lf", &Pfix.precurse.varnum.number) != 1) {
+            fprintf(stderr, "Error: Invalid number for SET\n");
+            exit(1);
+        }
         p->current_count++;
         parsePOSTFIX(p);
     }
 
     // if p.input[p.current_count] == variable 
     else if (isVARIABLE(p->input[p->current_count])) {
+        Pfix.precurse.varnum.variable = p->input[p->current_count][1];
         p->current_count++;
         parsePOSTFIX(p);
     }
 
     // if p.input[p.current_count] == operation
     else if (isOperation(p->input[p->current_count])) {
+        Pfix.precurse.symbol = p->input[p->current_count][1];
         p->current_count++;
         parsePOSTFIX(p);
     }
@@ -351,7 +369,7 @@ PFix parsePOSTFIX(prog* p)
         exit(1);
     }
 
-return pfix;
+return Pfix;
 }
 
 //LST is called by LOOP, like PFix is called by SET
