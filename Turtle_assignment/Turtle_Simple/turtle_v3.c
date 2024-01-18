@@ -40,13 +40,6 @@ typedef enum{
     INS_LST,
 }INSTYPE;
 
-// typedef enum{
-//     PLUS,
-//     MINUS,
-//     DIVIDE,
-//     MULT,
-// }OP;
-
 typedef double NUM;
 typedef char LTR;
 typedef char Op;
@@ -84,7 +77,8 @@ typedef struct PFix{
 typedef struct SET{
     INSTYPE type;
     LTR letter;
-    PFix* pfix;
+    PFix postfix[MAXTOKENSIZE];
+    int postfix_count;
 }SET;
 
 typedef struct COL{
@@ -116,7 +110,7 @@ FWD parseFWD(prog* p);
 RGT parseRGT(prog* p);
 COL parseCOL(prog* p);
 SET parseSET(prog* p);
-PFix parsePOSTFIX(prog* p);
+void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
 void test(void);
 
@@ -128,17 +122,34 @@ int main(void)
     prog* p = (prog*)malloc(sizeof(prog));
     p->current_count = 0;
 
-    if (p == NULL){
-        fprintf(stderr, "Memory allocation failure");
-        return 1;
-    }
+// Populate the input array with the sequence of tokens
+    strcpy(p->input[p->current_count++], "START");
+    strcpy(p->input[p->current_count++], "SET");
+    strcpy(p->input[p->current_count++], "A");
+    strcpy(p->input[p->current_count++], "(");
+    strcpy(p->input[p->current_count++], "0");
+    strcpy(p->input[p->current_count++], ")");
+    strcpy(p->input[p->current_count++], "END");
 
-    int i = 0;
-    while (scanf("%s", p->input[i]) == 1){
-        i++;
-    }
+// Reset current_count to 0 to start parsing from the beginning
+    p->current_count = 0;
+
+// Call the parsePROG function
     parsePROG(p);
-    printf("PARSED OKAY");
+
+    
+
+    // if (p == NULL){
+    //     fprintf(stderr, "Memory allocation failure");
+    //     return 1;
+    // }
+
+    // int i = 0;
+    // while (scanf("%s", p->input[i]) == 1){
+    //     i++;
+    // }
+    // parsePROG(p);
+    // printf("PARSED OKAY");
     free(p);
 
     return 0;
@@ -303,6 +314,7 @@ SET parseSET(prog* p)
 
 SET set; 
 set.type = INS_SET;
+set.postfix_count = 0;
 p->current_count++;
 
 //parse the letter and move on to parsePFIX
@@ -312,7 +324,7 @@ if (isLetter(p->input[p->current_count])) {
 
     if(strcmp(p->input[p->current_count], "(") == 0) {
         p->current_count++;
-        set.pfix = parsePOSTFIX(p);
+        parsePOSTFIX(p, &set);
         
     }
     
@@ -331,45 +343,40 @@ return set;
 
 }
 
-PFix parsePOSTFIX(prog* p)
-{
-    PFix Pfix;
-    p->current_count++;
-
-    if (strcmp(p->input[p->current_count], ")") == 0) {
-        return Pfix;
-    }
-
-    // if p.input[p.current_count] == number
-    else if (isNUMBER(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%lf", &Pfix.precurse.varnum.number) != 1) {
-            fprintf(stderr, "Error: Invalid number for SET\n");
+void parsePOSTFIX(prog* p, SET* set) {
+    while (strcmp(p->input[p->current_count], ")") != 0) {
+        if (set->postfix_count >= MAXTOKENSIZE) {
+            fprintf(stderr, "Postfix expression is too large\n");
             exit(1);
         }
+
+        PFix* currentPFix = &set->postfix[set->postfix_count];
+
+        if (isNUMBER(p->input[p->current_count])) {
+            if (sscanf(p->input[p->current_count], "%lf", &currentPFix->precurse.varnum.number) != 1) {
+                fprintf(stderr, "Invalid number in postfix expression\n");
+                exit(1);
+            }
+        }
+
+        else if (isVARIABLE(p->input[p->current_count])) {
+            currentPFix->precurse.varnum.variable = p->input[p->current_count][1];
+    
+        }
+        else if (isOperation(p->input[p->current_count])) {
+            currentPFix->precurse.symbol = p->input[p->current_count][0];
+            
+        }
+        else {
+            fprintf(stderr, "Expected valid token for postfix expression at %s\n", p->input[p->current_count]);
+            exit(1);
+        }
+
+        set->postfix_count++;
         p->current_count++;
-        parsePOSTFIX(p);
     }
 
-    // if p.input[p.current_count] == variable 
-    else if (isVARIABLE(p->input[p->current_count])) {
-        Pfix.precurse.varnum.variable = p->input[p->current_count][1];
-        p->current_count++;
-        parsePOSTFIX(p);
-    }
-
-    // if p.input[p.current_count] == operation
-    else if (isOperation(p->input[p->current_count])) {
-        Pfix.precurse.symbol = p->input[p->current_count][1];
-        p->current_count++;
-        parsePOSTFIX(p);
-    }
-
-    else {
-        fprintf(stderr, "expected valid token for postfix expression at %s    ", p->input[p->current_count]);
-        exit(1);
-    }
-
-return Pfix;
+    p->current_count++; // Move past the closing parenthesis
 }
 
 //LST is called by LOOP, like PFix is called by SET
