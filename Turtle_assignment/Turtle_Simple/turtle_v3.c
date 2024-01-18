@@ -123,33 +123,33 @@ int main(void)
     p->current_count = 0;
 
 // Populate the input array with the sequence of tokens
-    strcpy(p->input[p->current_count++], "START");
-    strcpy(p->input[p->current_count++], "SET");
-    strcpy(p->input[p->current_count++], "A");
-    strcpy(p->input[p->current_count++], "(");
-    strcpy(p->input[p->current_count++], "0");
-    strcpy(p->input[p->current_count++], ")");
-    strcpy(p->input[p->current_count++], "END");
+    // strcpy(p->input[p->current_count++], "START");
+    // strcpy(p->input[p->current_count++], "SET");
+    // strcpy(p->input[p->current_count++], "A");
+    // strcpy(p->input[p->current_count++], "(");
+    // strcpy(p->input[p->current_count++], "0");
+    // strcpy(p->input[p->current_count++], ")");
+    // strcpy(p->input[p->current_count++], "END");
 
 // Reset current_count to 0 to start parsing from the beginning
-    p->current_count = 0;
+//     p->current_count = 0;
 
-// Call the parsePROG function
-    parsePROG(p);
+// // Call the parsePROG function
+//     parsePROG(p);
 
     
 
-    // if (p == NULL){
-    //     fprintf(stderr, "Memory allocation failure");
-    //     return 1;
-    // }
+    if (p == NULL){
+        fprintf(stderr, "Memory allocation failure");
+        return 1;
+    }
 
-    // int i = 0;
-    // while (scanf("%s", p->input[i]) == 1){
-    //     i++;
-    // }
-    // parsePROG(p);
-    // printf("PARSED OKAY");
+    int i = 0;
+    while (scanf("%s", p->input[i]) == 1){
+        i++;
+    }
+    parsePROG(p);
+    printf("PARSED OKAY");
     free(p);
 
     return 0;
@@ -400,13 +400,14 @@ LST parseLST(prog* p)
 
     //If it is a number;
     if (isNUMBER(p->input[p->current_count])) {
-        if (sscanf(p->input[p->current_count], "%lf", &list.ITEM.varnum.number));
-        p->current_count++;
-        parseLST(p);
+        if (sscanf(p->input[p->current_count], "%lf", &list.ITEM.varnum.number) == 1) {
+            p->current_count++;
+            parseLST(p);
+        }
     }
 
     // if it is a word;
-    else if (sscanf(p->input[p->current_count], "%s", &list.ITEM.word.str)) {
+    else if (sscanf(p->input[p->current_count], "%s", list.ITEM.word.str)) {
         p->current_count++;
         parseLST(p);
 
@@ -417,7 +418,7 @@ LST parseLST(prog* p)
         exit(1);
     }
 
-    
+    return list;
 }
 
 bool isOperation(const char* str)
@@ -469,6 +470,7 @@ void test(void)
     
     assert(isNUMBER("10") == true);
     assert(isNUMBER("17.9987") == true);
+    assert(isNUMBER("0") == true);
 
     assert(isVARIABLE("$A") == true);
     assert(isVARIABLE("A") == false);
