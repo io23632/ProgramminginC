@@ -1,4 +1,8 @@
 START
     FORWARD 5
     RIGHT 45
+    COLOUR "BLACK"
+    COLOUR "17"
+    COLOUR 100
+    SET A ()
 END
