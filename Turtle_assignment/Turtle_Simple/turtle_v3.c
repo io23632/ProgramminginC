@@ -114,31 +114,50 @@ void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
 void test(void);
 
-int main(void)
+int main(int argc, char * argv[])
 {
 
     test();
 
+   if (argc < 2)
+   {
+    fprintf(stderr, "Usage: %s <filename>\n", argv[0]); 
+    return 1;
+   }
+
+    FILE* file = fopen(argv[1], "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error openining file");
+    }
+
     prog* p = (prog*)malloc(sizeof(prog));
-    p->current_count = 0;
+    if (p == NULL) {
+        fprintf(stderr, "Memory allocation error");
+        fclose(file);
+        return 1;
+    }
 
-// Populate the input array with the sequence of tokens
-    strcpy(p->input[p->current_count++], "START");
-    strcpy(p->input[p->current_count++], "SET");
-    strcpy(p->input[p->current_count++], "A");
-    strcpy(p->input[p->current_count++], "(");
-    strcpy(p->input[p->current_count++], "0");
-    strcpy(p->input[p->current_count++], ")");
-    strcpy(p->input[p->current_count++], "END");
 
-// Reset current_count to 0 to start parsing from the beginning
-    p->current_count = 0;
+//     prog* p = (prog*)malloc(sizeof(prog));
+//     p->current_count = 0;
 
-// Call the parsePROG function
-    parsePROG(p);
+// // Populate the input array with the sequence of tokens
+//     strcpy(p->input[p->current_count++], "START");
+//     strcpy(p->input[p->current_count++], "SET");
+//     strcpy(p->input[p->current_count++], "A");
+//     strcpy(p->input[p->current_count++], "(");
+//     strcpy(p->input[p->current_count++], "0");
+//     strcpy(p->input[p->current_count++], ")");
+//     strcpy(p->input[p->current_count++], "END");
+
+
+// // Reset current_count to 0 to start parsing from the beginning
+//     p->current_count = 0;
+
+// // Call the parsePROG function
+//     parsePROG(p);
 
     
-
     // if (p == NULL){
     //     fprintf(stderr, "Memory allocation failure");
     //     return 1;
@@ -148,9 +167,9 @@ int main(void)
     // while (scanf("%s", p->input[i]) == 1){
     //     i++;
     // }
-    // parsePROG(p);
+    parsePROG(p);
     // printf("PARSED OKAY");
-    free(p);
+    // free(p);
 
     return 0;
 }
