@@ -75,6 +75,14 @@ typedef struct FWD{
     VARNUM varnum;
 }FWD;
 
+typedef struct LOOP {
+    INSTYPE type;
+    LTR loop_variable;            // The loop variable
+    LST* loop_set;                // The set of values to iterate over
+    INSLST* loop_body;            // Pointer to the first instruction in the loop body
+    struct LOOP* next;            // Pointer to the next LOOP or instruction
+} LOOP;
+
 typedef struct INSLST {
     INSTYPE type;
     union {

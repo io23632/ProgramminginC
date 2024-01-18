@@ -1,40 +1,57 @@
 #include "turtle.h"
 
 
-int main (int argc, char * argv[]) 
-{
+ int main (int argc, char * argv[]) 
+ {
 
-    test();
+    // prog* p = (prog*)malloc(sizeof(prog));
 
-if (argc < 2) {
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-    return 1;
-}
+    // strcpy(p->input[0], "START");
+    // strcpy(p->input[1], "SET");
+    // strcpy(p->input[2], "A");
+    // strcpy(p->input[3], "(");
+    // strcpy(p->input[4], "$B");
+    // strcpy(p->input[5], "+");
+    // strcpy(p->input[6], ")");
+    // strcpy(p->input[7], "END");
+    // p->current_count = 0;
 
-FILE* file = fopen(argv[1], "r");
-if (file == NULL) {
-    fprintf(stderr, "Error opening file");
-}
+    // parsePROG(p);
+  
+     test();
 
-prog* p = (prog*)malloc(sizeof(prog));
-p->current_count = 0;
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
 
-if (p == NULL) {
-    fprintf(stderr, "Memory allocation failure");
-    fclose(file);
-    return 1;
-}
+    FILE* file = fopen(argv[1], "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file");
+    }
+
+    prog* p = (prog*)malloc(sizeof(prog));
+    p->current_count = 0;
+
+    if (p == NULL) {
+        fprintf(stderr, "Memory allocation failure");
+        fclose(file);
+        return 1;
+    }
 
     int i = 0;
     while (fscanf(file, "%s", p->input[i]) == 1) {
+        //printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
         i++;
-    }
-
-parsePROG(p);
-free(p);
-
-return 0;
 }
+
+
+    parsePROG(p);
+
+    free(p);
+
+    return 0;
+ }
 
 
 // int main(void)
@@ -280,13 +297,6 @@ void parsePOSTFIX(prog* p, SET* set) {
 
     p->current_count++; // Move past the closing parenthesis
 }
-
-
-
-
-
-
-
 
 bool isOperation(const char* str)
 {

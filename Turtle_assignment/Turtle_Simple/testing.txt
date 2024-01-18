@@ -18,6 +18,8 @@
 > I started off trying to parse the simple grammar in the exercise given
 > I added extention like COL WORD and VARNUM next and added unions to represent OR cases in the grammar
 > For the ITEMS grammar I am assuming it will either be a number or a word being looped over whithin the list, 
+> What I did right off the bat was to set up my code such that the hard work was done during writing the parser, if my parser stored data within appropriate 
+structs, then the interpreter would just be additional functions that utalised the stored information. This meant that setting my my ADT was essential for the parser. 
 
 // STRUCTURERS
 
@@ -38,7 +40,7 @@ typedef struct PROG{
 
 }PROG;
 
->
+> 
 
 
 
@@ -49,6 +51,8 @@ typedef struct PROG{
 > One thing I am having trouble getting to work is : assert assert(isVARIABLE("$ABCZ") == true); variables with multiple inputs, my isVARIABLE function should pick 
 this up, but the logic does not seem to be working. 
 
+> Another thing that tripped me up was the presence of space in the postfix expression, my code would work for e.g. SET A ( $A ) but not SET A ($A) this took consirdable time to figure out what the issue was
+> I learnt that rather than writing complex test cases, I could have figured this out via printint out my tokens from a simple line : //printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
 
 
 
