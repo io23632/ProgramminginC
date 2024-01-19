@@ -6,6 +6,8 @@ START
     COLOUR 100
     SET A ( $B )
     SET B ( $C 1+ )
-    LOOP { $A $B $C }
-    LOOP { "BLACK" "RED" "YELLOW" }
+    LOOP A OVER { 1 2 3 }
+    LOOP B OVER { "BLACK" "RED" "YELLOW" }
+    END
+    END
 END

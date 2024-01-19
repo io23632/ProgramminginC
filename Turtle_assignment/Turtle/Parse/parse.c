@@ -1,5 +1,4 @@
-#include "turtle.h"
-
+#include "parse.h"
 
  int main (int argc, char * argv[]) 
  {
@@ -40,41 +39,6 @@
     return 0;
  }
 
-
-// int main(void)
-// {
-
-    // prog* p = (prog*)malloc(sizeof(prog));
-
-    // strcpy(p->input[0], "START");
-    // strcpy(p->input[1], "SET");
-    // strcpy(p->input[2], "A");
-    // strcpy(p->input[3], "(");
-    // strcpy(p->input[4], "$B");
-    // strcpy(p->input[5], "+");
-    // strcpy(p->input[6], ")");
-    // strcpy(p->input[7], "END");
-    // p->current_count = 0;
-
-    // parsePROG(p);
-
-//     prog* p = (prog*)malloc(sizeof(prog));
-//     p->current_count = 0;
-//     if (p == NULL) {
-//         fprintf(stderr, "Memory allocation failure");
-//         return 1;
-//     }   
-
-//     int i = 0;
-//     while (scanf("%s", p->input[i]) == 1){
-//         i++;
-//     }
-//     parsePROG(p);
-
-//     free(p);
-//     return 0;
-// }
-
 void parsePROG(prog* p)
 {
     if (strcmp(p->input[p->current_count], "START") != 0) {
@@ -88,7 +52,7 @@ void parsePROG(prog* p)
 
     parseINSLST(p, &head);
     
-    // free INSLST(head);
+    freeINSLST(head);
 }
 
 void parseINSLST(prog* p, INSLST** inslst)
@@ -179,9 +143,6 @@ FWD parseFWD(prog* p)
 
     }
 }
-
-// what an interpreter function might look like for fwd :
-//void gofwd_(FWD* f, turle* t);
 
 RGT parseRGT(prog* p)
 {
@@ -346,16 +307,16 @@ LOOP parseLOOP(prog* p)
 
     INSLST* loop_body_head = NULL;
 
-    while (strcmp(p->input[p->current_count], ""))
+    while (strcmp(p->input[p->current_count], "END") != 0)
     {
-        /* code */
+        parseINSLST(p, &loop_body_head);
     }
-    
 
+    loop.loop_body = loop_body_head;
 
+    p->current_count++;
 
-
-    
+    return loop;
 }
 
 LST parseLST(prog* p)
@@ -364,9 +325,9 @@ LST parseLST(prog* p)
     list.list_count = 0;
     p->current_count++;
 
-    // is it a number?
+    
     if (strcmp(p->input[p->current_count], "{") != 0) {
-        fprintf(stderr, "expected a { before list ");
+        fprintf(stderr, "expected a { before list %s\n", p->input[p->current_count]);
         exit(1);
     }
     else {
@@ -467,12 +428,21 @@ bool isLetter(const char* str)
     if (isVARIABLE(str)) {
         return false;
     }
-    for (int i = 0; i < str[i] != '\0'; i++) {
+    for (int i = 0; i < (str[i] != '\0'); i++) {
         if(!isupper(str[i])) {
             return false;
         }
     }
     return true;
+}
+
+void freeINSLST(INSLST* head) 
+{
+    while (head != NULL) {
+        INSLST* temp = head;
+        head = head->next;
+        free(temp);
+    }
 }
 
 void test(void) 

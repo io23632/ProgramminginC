@@ -92,7 +92,7 @@ typedef struct LOOP {
     struct LOOP* next;            // Pointer to the next LOOP or instruction
 }LOOP;
 
-typedef struct INSLST{
+struct INSLST{
     INSTYPE type;
     union {
         FWD fwd;
@@ -102,7 +102,7 @@ typedef struct INSLST{
         LOOP loop;
     } ins;
     struct INSLST* next;
-}INSLST;
+};
 
 void parsePROG(prog* p);
 void parseINSLST(prog* p, INSLST** inslst);
@@ -119,4 +119,5 @@ LOOP parseLOOP(prog* p);
 void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
 void parseITEM(prog* p, LST* list);
+void freeINSLST(INSLST* head);
 void test(void);
