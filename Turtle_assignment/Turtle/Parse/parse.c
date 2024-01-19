@@ -437,6 +437,7 @@ bool isLetter(const char* str)
 }
 
 void freeINSLST(INSLST* inslst) {
+    
     while (inslst != NULL) {
         INSLST* temp = inslst;
         inslst = inslst->next; // Move to the next before freeing the current
@@ -452,9 +453,9 @@ void freeINSLST(INSLST* inslst) {
         
         // Free any other dynamically allocated elements within temp here...
         // For example, if COL has dynamically allocated strings:
-        if (temp->type == INS_COL && temp->ins.col.COL_postfix.word.str != NULL) {
-            free(temp->ins.col.COL_postfix.word.str);
-        }
+        // if (temp->type == INS_COL && temp->ins.col.COL_postfix.word.str != NULL) {
+        //     free(temp->ins.col.COL_postfix.word.str);
+        // }
 
         free(temp); // Free the current INSLST node
     }
