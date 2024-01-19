@@ -1,79 +1,41 @@
 #include "turtle.h"
 
-
- int main (int argc, char * argv[]) 
- {
-
-   
-     test();
-
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-        return 1;
-    }
-
-    FILE* file = fopen(argv[1], "r");
-    if (file == NULL) {
-        fprintf(stderr, "Error opening file");
-    }
+int main(void)
+{
 
     prog* p = (prog*)malloc(sizeof(prog));
+
+    strcpy(p->input[0], "START");
+    strcpy(p->input[1], "LOOP");
+    strcpy(p->input[2], "A");
+    strcpy(p->input[3], "OVER");
+    strcpy(p->input[4], "{");
+    strcpy(p->input[5], "1");
+    strcpy(p->input[6], "2");
+    strcpy(p->input[7], "3");
+    strcpy(p->input[8], "}");
+    strcpy(p->input[9], "END");
+    strcpy(p->input[10], "END");
     p->current_count = 0;
-
-    if (p == NULL) {
-        fprintf(stderr, "Memory allocation failure");
-        fclose(file);
-        return 1;
-    }
-
-    int i = 0;
-    while (fscanf(file, "%s", p->input[i]) == 1) {
-        printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
-        i++;
-}
-
 
     parsePROG(p);
 
-    free(p);
-
-    return 0;
- }
-
-
-// int main(void)
-// {
-
     // prog* p = (prog*)malloc(sizeof(prog));
-
-    // strcpy(p->input[0], "START");
-    // strcpy(p->input[1], "SET");
-    // strcpy(p->input[2], "A");
-    // strcpy(p->input[3], "(");
-    // strcpy(p->input[4], "$B");
-    // strcpy(p->input[5], "+");
-    // strcpy(p->input[6], ")");
-    // strcpy(p->input[7], "END");
     // p->current_count = 0;
+    // if (p == NULL) {
+    //     fprintf(stderr, "Memory allocation failure");
+    //     return 1;
+    // }   
 
+    // int i = 0;
+    // while (scanf("%s", p->input[i]) == 1){
+    //     i++;
+    // }
     // parsePROG(p);
 
-//     prog* p = (prog*)malloc(sizeof(prog));
-//     p->current_count = 0;
-//     if (p == NULL) {
-//         fprintf(stderr, "Memory allocation failure");
-//         return 1;
-//     }   
-
-//     int i = 0;
-//     while (scanf("%s", p->input[i]) == 1){
-//         i++;
-//     }
-//     parsePROG(p);
-
-//     free(p);
-//     return 0;
-// }
+    free(p);
+    return 0;
+}
 
 void parsePROG(prog* p)
 {
@@ -88,7 +50,7 @@ void parsePROG(prog* p)
 
     parseINSLST(p, &head);
     
-    // free INSLST(head);
+    freeINSLST(head);
 }
 
 void parseINSLST(prog* p, INSLST** inslst)
@@ -179,9 +141,6 @@ FWD parseFWD(prog* p)
 
     }
 }
-
-// what an interpreter function might look like for fwd :
-//void gofwd_(FWD* f, turle* t);
 
 RGT parseRGT(prog* p)
 {
@@ -334,7 +293,7 @@ LOOP parseLOOP(prog* p)
         fprintf(stderr, "Expected a OVER statement at %s\n", p->input[p->current_count]);
         exit(1);
     }
-    p->current_count++;
+    
 
     loop.loop_set = (LST*)malloc(sizeof(LST));
     if (loop.loop_set == NULL) {
@@ -346,16 +305,16 @@ LOOP parseLOOP(prog* p)
 
     INSLST* loop_body_head = NULL;
 
-    while (strcmp(p->input[p->current_count], ""))
+    while (strcmp(p->input[p->current_count], "END") != 0)
     {
-        /* code */
+        parseINSLST(p, &loop_body_head);
     }
-    
 
+    loop.loop_body = loop_body_head;
 
+    p->current_count++;
 
-
-    
+    return loop;
 }
 
 LST parseLST(prog* p)
@@ -364,9 +323,9 @@ LST parseLST(prog* p)
     list.list_count = 0;
     p->current_count++;
 
-    // is it a number?
+    
     if (strcmp(p->input[p->current_count], "{") != 0) {
-        fprintf(stderr, "expected a { before list ");
+        fprintf(stderr, "expected a { before list %s\n", p->input[p->current_count]);
         exit(1);
     }
     else {
@@ -467,7 +426,7 @@ bool isLetter(const char* str)
     if (isVARIABLE(str)) {
         return false;
     }
-    for (int i = 0; i < str[i] != '\0'; i++) {
+    for (int i = 0; i < (str[i] != '\0'); i++) {
         if(!isupper(str[i])) {
             return false;
         }
@@ -475,11 +434,18 @@ bool isLetter(const char* str)
     return true;
 }
 
-void test(void) 
+void freeINSLST(INSLST* head) 
 {
+    while (head != NULL) {
+        INSLST* temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
 
-    
-    assert(isNUMBER("10") == true);
+void test(void)
+{
+     assert(isNUMBER("10") == true);
     assert(isNUMBER("17.9987") == true);
 
     assert(isVARIABLE("$A") == true);
@@ -499,5 +465,4 @@ void test(void)
     assert(isLetter("U") == true);
     assert(isLetter("u") == false);
     assert(isLetter("$A") == false);
-
 }
