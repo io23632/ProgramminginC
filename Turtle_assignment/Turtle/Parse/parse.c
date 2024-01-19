@@ -295,7 +295,7 @@ LOOP parseLOOP(prog* p)
         fprintf(stderr, "Expected a OVER statement at %s\n", p->input[p->current_count]);
         exit(1);
     }
-    p->current_count++;
+    //p->current_count++;
 
     loop.loop_set = (LST*)malloc(sizeof(LST));
     if (loop.loop_set == NULL) {
@@ -436,12 +436,27 @@ bool isLetter(const char* str)
     return true;
 }
 
-void freeINSLST(INSLST* head) 
-{
-    while (head != NULL) {
-        INSLST* temp = head;
-        head = head->next;
-        free(temp);
+void freeINSLST(INSLST* inslst) {
+    while (inslst != NULL) {
+        INSLST* temp = inslst;
+        inslst = inslst->next; // Move to the next before freeing the current
+
+        if (temp->type == INS_LOOP) {
+            // Free the loop's list of items
+            if (temp->ins.loop.loop_set != NULL) {
+                free(temp->ins.loop.loop_set); // Free the dynamically allocated loop set
+            }
+            // Recursively free the loop body
+            freeINSLST(temp->ins.loop.loop_body);
+        }
+        
+        // Free any other dynamically allocated elements within temp here...
+        // For example, if COL has dynamically allocated strings:
+        if (temp->type == INS_COL && temp->ins.col.COL_postfix.word.str != NULL) {
+            free(temp->ins.col.COL_postfix.word.str);
+        }
+
+        free(temp); // Free the current INSLST node
     }
 }
 
