@@ -34,12 +34,17 @@ typedef struct WORD {
     char* str;
 }WORD;
 
-typedef struct LST{
+typedef struct ITEM{
     INSTYPE type;
     union {
         VARNUM varnum;
         WORD word;
-    }ITEM;
+    }items;
+}ITEM;
+
+typedef struct LST{
+    ITEM item_data[MAXTOKENSIZE];
+    int list_count;
 }LST;
 
 typedef struct PFix{
@@ -75,7 +80,7 @@ typedef struct FWD{
     VARNUM varnum;
 }FWD;
 
-typedef struct INSLST {
+typedef struct INSLST{
     INSTYPE type;
     union {
         FWD fwd;
@@ -84,7 +89,15 @@ typedef struct INSLST {
         SET set;
     } ins;
     struct INSLST* next;
-} INSLST;
+}INSLST;
+
+typedef struct LOOP {
+    INSTYPE type;
+    LTR loop_variable;            // The loop variable
+    LST* loop_set;                // The set of values to iterate over
+    INSLST* loop_body;            // Pointer to the first instruction in the loop body
+    struct LOOP* next;            // Pointer to the next LOOP or instruction
+} LOOP;
 
 void parsePROG(prog* p);
 void parseINSLST(prog* p);
@@ -96,7 +109,8 @@ FWD parseFWD(prog* p);
 RGT parseRGT(prog* p);
 COL parseCOL(prog* p);
 SET parseSET(prog* p);
+LOOP parseLOOP(prog* p);
 void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
-void testParsePROG_ValidInput();
+void parseITEM(prog* p, LST* list);
 void test(void);

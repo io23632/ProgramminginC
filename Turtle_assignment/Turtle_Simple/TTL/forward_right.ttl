@@ -4,5 +4,8 @@ START
     COLOUR "BLACK"
     COLOUR "17"
     COLOUR 100
-    SET A ()
+    SET A ( $B )
+    SET B ( $C 1+ )
+    LOOP { $A $B $C }
+    LOOP { "BLACK" "RED" "YELLOW" }
 END

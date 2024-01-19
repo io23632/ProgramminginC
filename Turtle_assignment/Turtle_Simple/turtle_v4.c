@@ -1,44 +1,63 @@
 #include "turtle.h"
 
 
-int main (int argc, char * argv[]) 
-{
+ int main (int argc, char * argv[]) 
+ {
 
-    test();
+   
+     test();
 
-if (argc < 2) {
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-    return 1;
-}
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
 
-FILE* file = fopen(argv[1], "r");
-if (file == NULL) {
-    fprintf(stderr, "Error opening file");
-}
+    FILE* file = fopen(argv[1], "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file");
+    }
 
-prog* p = (prog*)malloc(sizeof(prog));
-p->current_count = 0;
+    prog* p = (prog*)malloc(sizeof(prog));
+    p->current_count = 0;
 
-if (p == NULL) {
-    fprintf(stderr, "Memory allocation failure");
-    fclose(file);
-    return 1;
-}
+    if (p == NULL) {
+        fprintf(stderr, "Memory allocation failure");
+        fclose(file);
+        return 1;
+    }
 
     int i = 0;
     while (fscanf(file, "%s", p->input[i]) == 1) {
+        printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
         i++;
-    }
-
-parsePROG(p);
-free(p);
-
-return 0;
 }
+
+
+    parsePROG(p);
+
+    free(p);
+
+    return 0;
+ }
 
 
 // int main(void)
 // {
+
+    // prog* p = (prog*)malloc(sizeof(prog));
+
+    // strcpy(p->input[0], "START");
+    // strcpy(p->input[1], "SET");
+    // strcpy(p->input[2], "A");
+    // strcpy(p->input[3], "(");
+    // strcpy(p->input[4], "$B");
+    // strcpy(p->input[5], "+");
+    // strcpy(p->input[6], ")");
+    // strcpy(p->input[7], "END");
+    // p->current_count = 0;
+
+    // parsePROG(p);
+
 //     prog* p = (prog*)malloc(sizeof(prog));
 //     p->current_count = 0;
 //     if (p == NULL) {
@@ -101,6 +120,11 @@ void parseINSLST(prog* p)
         parseSET(p);
         parseINSLST(p);
 
+    }
+
+    else if (strcmp(p->input[p->current_count], "LOOP") == 0 ) {
+        parseLOOP(p);
+        parseINSLST(p);
     }
     
     else {
@@ -281,12 +305,86 @@ void parsePOSTFIX(prog* p, SET* set) {
     p->current_count++; // Move past the closing parenthesis
 }
 
+LOOP parseLOOP(prog* p)
+{
+
+    LOOP loop;
+
+    parseLST(p);
+    
+    return loop;
+}
+// list checks for "{"
+LST parseLST(prog* p)
+{
+    LST list;
+    list.list_count = 0;
+    p->current_count++;
+
+    // is it a number?
+    if (strcmp(p->input[p->current_count], "{") != 0) {
+        fprintf(stderr, "expected a { before list ");
+        exit(1);
+    }
+    else {
+        p->current_count++;
+        parseITEM(p, &list);
+    }
+
+    return list;
+
+}
+
+void parseITEM(prog* p, LST* list)
+{
+
+while (strcmp(p->input[p->current_count], "}") != 0) {
+    if (list->list_count >= MAXTOKENSIZE) {
+        fprintf(stderr, "LIST size maximum reached");
+        exit(1);
+    }
 
 
+ITEM* currentList = &list->item_data[list->list_count];
 
+// if is Number: 
+if (isNUMBER(p->input[p->current_count])) {
+    if (sscanf(p->input[p->current_count], "%lf", &currentList->items.varnum.number) != 1) {
+        fprintf(stderr, "Invalid number in list");
+        exit(1);
+    }
+}
 
+// if is variable:
 
+else if (isVARIABLE(p->input[p->current_count])) {
+    currentList->items.varnum.variable = p->input[p->current_count][0];
+}
 
+else {
+
+    char* word = p->input[p->current_count];
+
+    if (word[0] == '\"' && word[strlen(word) - 1] == '\"') {
+        word++;
+        word[strlen(word) - 1] = '\0';
+    }
+
+    currentList->items.word.str = strdup(word);
+
+    if (currentList->items.word.str == NULL) {
+        fprintf(stderr, "Memory allocation failure");
+        exit(1);
+    }
+
+}
+list->list_count++;
+p->current_count++;
+
+}
+
+p->current_count++;
+}
 
 bool isOperation(const char* str)
 {
