@@ -1,58 +1,68 @@
-#include "parse.h"
+#include "interp.h"
+#include "../neillsimplescreen.h"
 
- int main (int argc, char * argv[]) 
- {
+int main(int argc, char *argv[]) {
+    test();
 
-   
-     test();
-
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    if (argc < 2 || argc > 3) {
+        fprintf(stderr, "Usage: %s <inputfile> [<outputfile>]\n", argv[0]);
         return 1;
     }
 
     FILE* file = fopen(argv[1], "r");
     if (file == NULL) {
-        fprintf(stderr, "Error opening file");
+        perror("Error opening input file");
+        return 1;
     }
-
+    
     prog* p = (prog*)malloc(sizeof(prog));
-    p->current_count = 0;
-
     if (p == NULL) {
-        fprintf(stderr, "Memory allocation failure");
+        fprintf(stderr, "Memory allocation failure\n");
         fclose(file);
         return 1;
     }
+    p->current_count = 0;
+
 
     int i = 0;
-    while (fscanf(file, "%s", p->input[i]) == 1) {
-        printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
+    while (fscanf(file, "%s", p->input[i]) == 1)
+    {
         i++;
-}
+    }
+
+    INSLST* head = NULL;
+
+    // if the input is: ./interp.c <inputfile.ttl> <outputfile.txt>: print results to text file
+    if (argc == 3) {
+        freopen(argv[2], "w", stdout);
+        parsePROG(p, &head);
+        interp(head);
+        fclose(stdout);
+    }
+    // if the input is: ./interp.c <inputfile.ttl>: print results to screen
+    else if (argc == 2) {
+        parsePROG(p, &head);
+        interp(head);
+    }
+     
 
 
-    parsePROG(p);
-
+    freeINSLST(head);
     free(p);
 
     return 0;
- }
+}
 
-void parsePROG(prog* p)
+
+void parsePROG(prog* p, INSLST** head)
 {
     if (strcmp(p->input[p->current_count], "START") != 0) {
         fprintf(stderr, "Expected a START\n");
         exit(1);
     }
-   
     p->current_count++;
-
-    INSLST* head = NULL;
-
-    parseINSLST(p, &head);
+    parseINSLST(p, head);
     
-    freeINSLST(head);
 }
 
 void parseINSLST(prog* p, INSLST** inslst)
@@ -82,6 +92,7 @@ else if (strcmp(p->input[p->current_count], "RIGHT") == 0) {
     (*inslst)->type = INS_RGT;
     (*inslst)->ins.rgt = parseRGT(p);
     parseINSLST(p, &(*inslst)->next);
+    
 }
 
 else if (strcmp(p->input[p->current_count], "COLOUR") == 0) {
@@ -111,6 +122,34 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
     parseINSLST(p, &(*inslst)->next);
 }
 
+}
+
+void interp(INSLST* inslst) {
+    TurtleState state = {0, 0, 0, true};
+
+    while (inslst != NULL) {
+        switch (inslst->type) {
+            case INS_FWD:
+                go_fwd(&state, inslst->ins.fwd);
+                break;
+            case INS_RGT:
+                turn_rgt(&state, inslst->ins.rgt);
+                break;
+            // case INS_COL:
+            //     slct_col(inslst->ins.col);
+            //     break;
+            // case INS_LOOP:
+            //     interp_loop(&state, inslst->ins.loop);
+            //     break;
+            // case INS_SET:
+            //     interp_set(&state, inslst->ins.set);
+            //     break;
+            default:
+                fprintf(stderr, "Unrecognized instruction type\n");
+                break;
+        }
+        inslst = inslst->next;
+    }
 }
 
 FWD parseFWD(prog* p)

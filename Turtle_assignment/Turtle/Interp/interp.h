@@ -7,7 +7,9 @@
 #include <math.h>
 
 #define MAXTOKENSIZE 1000
-
+#define M_PI 3.14159265358979323846
+#define GRID_WIDTH 51
+#define GRID_HEIGHT 33
 
 typedef enum{
     INS_FWD,
@@ -104,7 +106,15 @@ struct INSLST{
     struct INSLST* next;
 };
 
-void parsePROG(prog* p);
+typedef struct TurtleState{
+    NUM x;
+    NUM y;
+    NUM angle;
+    bool pen;
+}TurtleState;
+
+
+void parsePROG(prog* p, INSLST** head);
 void parseINSLST(prog* p, INSLST** inslst);
 bool isNUMBER(const char* str);
 bool isVARIABLE(const char* str);
@@ -120,4 +130,12 @@ void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
 void parseITEM(prog* p, LST* list);
 void freeINSLST(INSLST* head);
+
+//////////Interpreter functions//////
+void interp(INSLST* inslst);
+void go_fwd(TurtleState* T, FWD fwd_interp);
+void turn_rgt(TurtleState* T, RGT rgt_interp);
+// void slct_col(COL col_interp);
+// void interp_set(TurtleState* T, SET set);
+// void interp_loop(TurtleState* T, LOOP loop_interp);
 void test(void);
