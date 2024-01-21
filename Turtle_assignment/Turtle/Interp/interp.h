@@ -7,7 +7,6 @@
 #include <math.h>
 
 #define MAXTOKENSIZE 1000
-#define M_PI 3.14159265358979323846
 #define GRID_WIDTH 51
 #define GRID_HEIGHT 33
 
@@ -113,6 +112,10 @@ typedef struct TurtleState{
     bool pen;
 }TurtleState;
 
+typedef struct grid{
+    char cells[GRID_WIDTH][GRID_HEIGHT];
+}grid;
+
 
 void parsePROG(prog* p, INSLST** head);
 void parseINSLST(prog* p, INSLST** inslst);
@@ -133,6 +136,8 @@ void freeINSLST(INSLST* head);
 
 //////////Interpreter functions//////
 void interp(INSLST* inslst);
+// void intilgrid(grid* g);
+// void printgrid(grid* g);
 void go_fwd(TurtleState* T, FWD fwd_interp);
 void turn_rgt(TurtleState* T, RGT rgt_interp);
 // void slct_col(COL col_interp);

@@ -500,6 +500,18 @@ void freeINSLST(INSLST* inslst) {
     }
 }
 
+void go_fwd(TurtleState* state, FWD fwd_interp)
+{
+    // assuming the turtel state in initlised in main to be: 
+    // Turtle state = { .x = 25, .y = 16, .angle = 0}
+
+    // if angle is 0: 
+
+}
+
+
+
+
 void test(void) 
 {
 
