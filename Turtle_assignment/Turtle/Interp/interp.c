@@ -523,20 +523,6 @@ void go_fwd(TurtleState* state, FWD fwd_interp)
     }
 
 
-    // if angle is 0 print W down horizontly 
-    if (state->angle == 0) {
-       
-       for (int i = 0; i < distance; i++) {
-            printf("W");
-            printf("\n");
-       }
-    }
-
-    if (state->angle == 90) {
-        for (int i = 0; i < distance; i++) {
-            printf("W");
-       }
-    }
     // if any other angle: 
     state->x += distance * sin(radianANgle);
     state->y -= distance * cos(radianANgle);
@@ -548,7 +534,7 @@ void go_fwd(TurtleState* state, FWD fwd_interp)
     }
 }
 
-
+// Implement a line drawing algorithm 
 
 
 void test(void) 
