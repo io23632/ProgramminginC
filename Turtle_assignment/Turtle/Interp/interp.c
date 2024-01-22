@@ -505,8 +505,47 @@ void go_fwd(TurtleState* state, FWD fwd_interp)
     // assuming the turtel state in initlised in main to be: 
     // Turtle state = { .x = 25, .y = 16, .angle = 0}
 
-    // if angle is 0: 
+    double distance = fwd_interp.varnum.number;
+    double radianANgle = state->angle * M_PI / 180.0;
 
+    if (state->x < 0) {
+        state->x = 0;
+    }
+    else if (state->x > GRID_WIDTH){
+        state->x = GRID_WIDTH -1;
+    }
+
+    if (state->y < 0) {
+        state->y = 0;
+    }
+    else if (state > GRID_HEIGHT) {
+        state->y = GRID_HEIGHT -1;
+    }
+
+
+    // if angle is 0 print W down horizontly 
+    if (state->angle == 0) {
+       
+       for (int i = 0; i < distance; i++) {
+            printf("W");
+            printf("\n");
+       }
+    }
+
+    if (state->angle == 90) {
+        for (int i = 0; i < distance; i++) {
+            printf("W");
+       }
+    }
+    // if any other angle: 
+    state->x += distance * sin(radianANgle);
+    state->y -= distance * cos(radianANgle);
+    grid* g;
+    for (int i = 0; i < distance; i++) {
+        for (int j = 0; j < distance; i++) {
+            g->cells[state->x][state->y]
+        }
+    }
 }
 
 

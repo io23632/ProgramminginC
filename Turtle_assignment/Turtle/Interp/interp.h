@@ -9,6 +9,7 @@
 #define MAXTOKENSIZE 1000
 #define GRID_WIDTH 51
 #define GRID_HEIGHT 33
+#define M_PI 3.14159265358979323846
 
 typedef enum{
     INS_FWD,
