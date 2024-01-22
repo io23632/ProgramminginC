@@ -114,7 +114,7 @@ typedef struct TurtleState{
 }TurtleState;
 
 typedef struct grid{
-    char cells[GRID_WIDTH][GRID_HEIGHT];
+    char pixel[GRID_WIDTH][GRID_HEIGHT];
 }grid;
 
 
@@ -138,7 +138,7 @@ void freeINSLST(INSLST* head);
 //////////Interpreter functions//////
 void interp(INSLST* inslst);
 // void intilgrid(grid* g);
-// void printgrid(grid* g);
+void printgrid(grid* g);
 void go_fwd(TurtleState* T, FWD fwd_interp);
 void turn_rgt(TurtleState* T, RGT rgt_interp);
 // void slct_col(COL col_interp);

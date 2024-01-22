@@ -525,20 +525,27 @@ void go_fwd(TurtleState* state, FWD fwd_interp)
         state->y = GRID_HEIGHT -1;
     }
 
-   
-   
+
+    // if any other angle: 
+    state->x += distance * sin(radianANgle);
+    state->y -= distance * cos(radianANgle);
+    
 }
 
-// old x, old y, new x, new y. 
+// Implement a line drawing algorithm 
 
 
-void linedraw(int old_x, int old_y, int newx, int new_y, grid* g) 
-{
 
 
-// 
 
+void printgrid(grid* g){
 
+for (int i = 0; i < GRID_HEIGHT; i++) {
+    for (int j = 0; j < GRID_WIDTH; j++) {
+        printf("%c", g->pixel[i][j]);
+    }
+    printf("\n");
+}
 
 }
 
