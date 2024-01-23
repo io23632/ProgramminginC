@@ -15,40 +15,47 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
-    prog* p = (prog*)malloc(sizeof(prog));
-    if (p == NULL) {
-        fprintf(stderr, "Memory allocation failure\n");
-        fclose(file);
-        return 1;
-    }
-    p->current_count = 0;
+    prog p;
+    p.current_count = 0;
+    // prog* p = (prog*)malloc(sizeof(prog));
+    // if (p == NULL) {
+    //     fprintf(stderr, "Memory allocation failure\n");
+    //     fclose(file);
+    //     return 1;
+    // }
+    // p->current_count = 0;
 
+    // TurtleState* state = (TurtleState*)malloc(sizeof(TurtleState));
+    // state->x = 0;
+    // state->y = 0;
+    // state->angle = 45;
+    // state->pen = false;
 
     int i = 0;
-    while (fscanf(file, "%s", p->input[i]) == 1)
+    while (fscanf(file, "%s", p.input[i]) == 1)
     {
         i++;
     }
 
     INSLST* head = NULL;
-
     // if the input is: ./interp.c <inputfile.ttl> <outputfile.txt>: print results to text file
     if (argc == 3) {
         freopen(argv[2], "w", stdout);
-        parsePROG(p, &head);
+        parsePROG(&p, &head);
         interp(head);
         fclose(stdout);
     }
     // if the input is: ./interp.c <inputfile.ttl>: print results to screen
     else if (argc == 2) {
-        parsePROG(p, &head);
+        parsePROG(&p, &head);
         interp(head);
     }
      
-
+    
 
     freeINSLST(head);
-    free(p);
+    //free(p);
+
 
     return 0;
 }
@@ -60,8 +67,10 @@ void parsePROG(prog* p, INSLST** head)
         fprintf(stderr, "Expected a START\n");
         exit(1);
     }
+
     p->current_count++;
     parseINSLST(p, head);
+    //printgrid(&g);
     
 }
 
@@ -125,12 +134,14 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 }
 
 void interp(INSLST* inslst) {
-    TurtleState state = {0, 0, 0, true};
 
+    TurtleState state = {25, 16, 90, true};
+    grid g;
+    initilgrid(&g);
     while (inslst != NULL) {
         switch (inslst->type) {
             case INS_FWD:
-                go_fwd(&state, inslst->ins.fwd);
+                go_fwd(&state, inslst->ins.fwd, &g);
                 break;
             case INS_RGT:
                 turn_rgt(&state, inslst->ins.rgt);
@@ -149,7 +160,11 @@ void interp(INSLST* inslst) {
                 break;
         }
         inslst = inslst->next;
+        g.pixel[(int)state.y][(int)state.x] = 'O';
+        printgrid(&g); 
+          
     }
+    
 }
 
 FWD parseFWD(prog* p)
@@ -490,26 +505,17 @@ void freeINSLST(INSLST* inslst) {
             freeINSLST(temp->ins.loop.loop_body);
         }
         
-        // Free any other dynamically allocated elements within temp here...
-        // For example, if COL has dynamically allocated strings:
-        // if (temp->type == INS_COL && temp->ins.col.COL_postfix.word.str != NULL) {
-        //     free(temp->ins.col.COL_postfix.word.str);
-        // }
-
         free(temp); // Free the current INSLST node
     }
 }
 
-void go_fwd(TurtleState* state, FWD fwd_interp)
+void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
 {
     // assuming the turtel state in initlised in main to be: 
-    // Turtle state = { .x = 25, .y = 16, .angle = 0}
+    // Turtle state = { .x = 25, .y = 16, .angle = 90}
 
     double distance = fwd_interp.varnum.number;
     double radianANgle = state->angle * M_PI / 180.0;
-     // if any other angle: 
-    // state->x += distance * sin(radianANgle);
-    // state->y -= distance * cos(radianANgle);
 
     if (state->x < 0) {
         state->x = 0;
@@ -521,26 +527,84 @@ void go_fwd(TurtleState* state, FWD fwd_interp)
     if (state->y < 0) {
         state->y = 0;
     }
-    else if (state > GRID_HEIGHT) {
+    else if (state->y > GRID_HEIGHT) {
         state->y = GRID_HEIGHT -1;
     }
-
-
-    // if any other angle: 
-    state->x += distance * sin(radianANgle);
-    state->y -= distance * cos(radianANgle);
     
+    int x1 = state->x;
+    int y1 = state->y;
+    state->pen = true;
+
+    int x2 = x1 + distance * cos(radianANgle);
+    int y2 = y1 + distance * sin(radianANgle);
+    state->x = x2;
+    state->y = y2;
+    linedraw(x1, y1, x2, y2, g);
+
+
 }
 
-// Implement a line drawing algorithm 
+void turn_rgt(TurtleState* state, RGT rgt_ins) {
 
+    state->angle = state->angle - rgt_ins.varnum.number;
+}
 
+void initilgrid(grid* g)
+{
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            g->pixel[i][j] = ' ';
+        }
+    }
+}
 
+void linedraw(int x1, int y1, int x2, int y2, grid* g)
+{
+    int dx = abs(x2 - x1);
+    int dy = -abs(y2 - y1);
+    int sx;
+    int sy;
 
+    if (x1 < x2) {
+        sx = 1;
+    }
+    else {
+        sx = -1;
+    }
 
-void printgrid(grid* g){
+    if (y1 < y2) {
+        sy = 1;
+    }
+    else {
+        sy = -1;
+    }
 
-for (int i = 0; i < GRID_HEIGHT; i++) {
+    int P = dx + dy;
+    int e2;
+
+    while (true)
+    {
+        g->pixel[y1][x1] ='*';
+        if (x1 == x2 && y1 == y2) {
+            break;
+        }
+        e2 = P * 2;
+        if (e2 >= dy) {
+            P = P + dy;
+            x1 = x1 + sx;
+        }
+        if (e2 <= dx) {
+            P = P + dx;
+            y1 = y1 + sy;
+        }
+
+    }
+
+}
+
+void printgrid(grid* g)
+{
+    for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
         printf("%c", g->pixel[i][j]);
     }

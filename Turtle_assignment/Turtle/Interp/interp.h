@@ -9,7 +9,7 @@
 #define MAXTOKENSIZE 1000
 #define GRID_WIDTH 51
 #define GRID_HEIGHT 33
-#define M_PI 3.14159265358979323846
+//#define M_PI 3.14159265358979323846
 
 typedef enum{
     INS_FWD,
@@ -114,7 +114,7 @@ typedef struct TurtleState{
 }TurtleState;
 
 typedef struct grid{
-    char pixel[GRID_WIDTH][GRID_HEIGHT];
+    char pixel[GRID_HEIGHT][GRID_WIDTH];
 }grid;
 
 
@@ -134,13 +134,13 @@ void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
 void parseITEM(prog* p, LST* list);
 void freeINSLST(INSLST* head);
-
 //////////Interpreter functions//////
 void interp(INSLST* inslst);
-// void intilgrid(grid* g);
+void go_fwd(TurtleState* T, FWD fwd_interp, grid* g);
+void turn_rgt(TurtleState* T, RGT rgt_ins);
+void linedraw(int x1, int y1, int x2, int y2, grid* g);
+void initilgrid(grid* g);
 void printgrid(grid* g);
-void go_fwd(TurtleState* T, FWD fwd_interp);
-void turn_rgt(TurtleState* T, RGT rgt_interp);
 // void slct_col(COL col_interp);
 // void interp_set(TurtleState* T, SET set);
 // void interp_loop(TurtleState* T, LOOP loop_interp);

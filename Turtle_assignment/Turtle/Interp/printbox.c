@@ -10,8 +10,8 @@ struct Grid{
 
 
 typedef struct Grid grid;
-void linedraw(int x1, int y1, int x2, int y2, grid* g);
 void initilgrid(grid* g);
+void linedraw(int x1, int y1, int x2, int y2, grid* g);
 void printgrid(grid* g);
 
 
@@ -33,42 +33,119 @@ void initilgrid(grid* g)
 {
     for (int i = 0; i < MAXGRID; i++) {
         for (int j = 0; j < MAXGRID; j++) {
-            g->pixel[i][j] = ' ';
+            g->pixel[j][i] = ' ';
         }
     }
 }
 
 
-void linedraw(int x1, int y1, int x2, int y2, grid* g) {
+// void linedraw(int x1, int y1, int x2, int y2, grid* g) {
+//     int dx = abs(x2 - x1);
+//     int dy = -abs(y2 - y1);
+//     int sx, sy;
+    
+
+//     if (x1 < x2) {
+//         sx = 1;
+//     } else {
+//         sx = -1;
+//     }
+    
+  
+//     if (y1 < y2) {
+//         sy = 1;
+//     } else {
+//         sy = -1;
+//     }
+    
+//     int err = dx + dy;
+//     int e2; 
+
+//     while (true) {
+//         g->pixel[y1][x1] = '*';
+//         if (x1 == x2 && y1 == y2) 
+//         break;
+//         e2 = 2 * err;
+//         if (e2 >= dy) { 
+//             err += dy; 
+//             x1 += sx; 
+//         }
+//         if (e2 <= dx) { 
+//             err += dx; 
+//             y1 += sy; 
+//         }
+//     }
+// }
+
+
+void linedraw(int x1, int y1, int x2, int y2, grid* g)
+{
     int dx = abs(x2 - x1);
-    int sx = x1 < x2 ? 1 : -1;
-    int dy = -abs(y2 - y1); // Notice dy is negative here
-    int sy = y1 < y2 ? 1 : -1;
-    int err = dx + dy, e2; // Initialize error term
+    int dy = -abs(y2 - y1);
+    int sx;
+    int sy;
 
-    while (true) { // Loop until break
-        if (x1 >= 0 && x1 < MAXGRID && y1 >= 0 && y1 < MAXGRID) {
-            g->pixel[y1][x1] = '*'; // Mark the pixel
-        }
-        if (x1 == x2 && y1 == y2) break; // Break out of the loop once the end is reached
-        e2 = 2 * err;
-        if (e2 >= dy) { // Move in x-direction
-            err += dy;
-            x1 += sx;
-        }
-        if (e2 <= dx) { // Move in y-direction, note dx is positive, dy is negative
-            err += dx;
-            y1 += sy;
-        }
+    if (x1 < x2) {
+        sx = 1;
     }
-}
+    else {
+        sx = -1;
+    }
+
+    if (y1 < y2) {
+        sy = 1;
+    }
+    else {
+        sy = -1;
+    }
+
+    int P = dx + dy;
+    int e2;
+
+    while (true)
+    {
+        g->pixel[y1][x1] ='*';
+        if (x1 == x2 && y1 == y2) {
+            break;
+        }
+        e2 = P * 2;
+        if (e2 >= dy) {
+            P = P + dy;
+            x1 = x1 + sx;
+        }
+        if (e2 <= dx) {
+            P = P + dx;
+            y1 = y1 + sy;
+        }
+
+    }
+        
+
+//     while (true) {
+//         g->pixel[y1][x1] = '*';
+//         if (x1 == x2 && y1 == y2) 
+//         break;
+//         e2 = 2 * err;
+//         if (e2 >= dy) { 
+//             err += dy; 
+//             x1 += sx; 
+//         }
+//         if (e2 <= dx) { 
+//             err += dx; 
+//             y1 += sy; 
+//         }
+//     }
+// 
+
+        
+    }
 
 
 void printgrid(grid* g){
 
 for (int i = 0; i < MAXGRID; i++) {
     for (int j = 0; j < MAXGRID; j++) {
-        printf("%c", g->pixel[i][j]);
+        printf("%c", g->pixel[j][i]);
     }
     printf("\n");
 }

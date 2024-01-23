@@ -27,7 +27,7 @@
 
     int i = 0;
     while (fscanf(file, "%s", p->input[i]) == 1) {
-        //printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
+        printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
         i++;
 }
 
