@@ -138,7 +138,7 @@ void freeINSLST(INSLST* head);
 void interp(INSLST* inslst);
 void go_fwd(TurtleState* T, FWD fwd_interp, grid* g);
 void turn_rgt(TurtleState* T, RGT rgt_ins);
-void linedraw(int x1, int y1, int x2, int y2, grid* g);
+void linedraw(int x1, int y1, int x2, int y2, grid* g, char c);
 void initilgrid(grid* g);
 void printgrid(grid* g);
 // void slct_col(COL col_interp);

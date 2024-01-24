@@ -50,8 +50,6 @@ int main(int argc, char *argv[]) {
         parsePROG(&p, &head);
         interp(head);
     }
-     
-    
 
     freeINSLST(head);
     //free(p);
@@ -160,11 +158,11 @@ void interp(INSLST* inslst) {
                 break;
         }
         inslst = inslst->next;
-        g.pixel[(int)state.y][(int)state.x] = 'O';
-        printgrid(&g); 
+        //g.pixel[(int)state.y][(int)state.x] = 'O';
+        
           
     }
-    
+    printgrid(&g); 
 }
 
 FWD parseFWD(prog* p)
@@ -539,7 +537,7 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     int y2 = y1 + distance * sin(radianANgle);
     state->x = x2;
     state->y = y2;
-    linedraw(x1, y1, x2, y2, g);
+    linedraw(x1, y1, x2, y2, g, 'W');
 
 
 }
@@ -558,7 +556,7 @@ void initilgrid(grid* g)
     }
 }
 
-void linedraw(int x1, int y1, int x2, int y2, grid* g)
+void linedraw(int x1, int y1, int x2, int y2, grid* g, char c)
 {
     int dx = abs(x2 - x1);
     int dy = -abs(y2 - y1);
@@ -584,7 +582,7 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g)
 
     while (true)
     {
-        g->pixel[y1][x1] ='*';
+        g->pixel[y1][x1] = c;
         if (x1 == x2 && y1 == y2) {
             break;
         }
@@ -602,15 +600,51 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g)
 
 }
 
+// void printgrid(grid* g)
+// {
+//     for (int i = 0; i < GRID_HEIGHT; i++) {
+//     for (int j = 0; j < GRID_WIDTH; j++) {
+//         printf("%c", g->pixel[i][j]);
+//     }
+//     printf("\n");
+// }
+
+// }
+
+
+
 void printgrid(grid* g)
 {
+   
+    neillclrscrn();
+    neillcursorhome();
+    neillbgcol(black);
     for (int i = 0; i < GRID_HEIGHT; i++) {
-    for (int j = 0; j < GRID_WIDTH; j++) {
-        printf("%c", g->pixel[i][j]);
-    }
-    printf("\n");
-}
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            
+            switch (g->pixel[i][j]) {
+                case 'K': neillfgcol(black); break;
+                case 'R': neillfgcol(red); break;
+                case 'G': neillfgcol(green); break;
+                case 'Y': neillfgcol(yellow); break;
+                case 'B': neillfgcol(blue); break;
+                case 'M': neillfgcol(magenta); break;
+                case 'C': neillfgcol(cyan); break;
+                case 'W': neillfgcol(white); break;
+                default: neillreset(); break; 
+            }
 
+            
+            printf("%c", g->pixel[i][j]);
+
+            
+            neillreset();
+        }
+        printf("\n");
+    }
+
+    
+    neillbusywait(1.0);  
 }
 
 void test(void) 
