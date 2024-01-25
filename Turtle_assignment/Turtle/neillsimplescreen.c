@@ -1,4 +1,4 @@
-/*
+ /*
    Simple attempt to use colour, clear screen etc.
    Will only work on ANSI compliant terminals :
    https://en.wikipedia.org/wiki/ANSI_escape_code

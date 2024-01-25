@@ -37,11 +37,8 @@ int main(int argc, char *argv[]) {
         parsePROG(&p, &head);
         interp(head);
     }
-     
     freeINSLST(head);
     
-
-
     return 0;
 }
 
@@ -119,7 +116,7 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 
 void interp(INSLST* inslst) {
 
-    TurtleState state = {26, 16, 90, true};
+    TurtleState state = {26, 16, 90, true, 'W'};
     grid g;
     initilgrid(&g);
     while (inslst != NULL) {
@@ -130,9 +127,9 @@ void interp(INSLST* inslst) {
             case INS_RGT:
                 turn_rgt(&state, inslst->ins.rgt);
                 break;
-            // case INS_COL:
-            //     slct_col(inslst->ins.col);
-            //     break;
+            case INS_COL:
+                set_col(&state, inslst->ins.col);
+                break;
             // case INS_LOOP:
             //     interp_loop(&state, inslst->ins.loop);
             //     break;
@@ -145,10 +142,9 @@ void interp(INSLST* inslst) {
         }
         inslst = inslst->next;
         //g.pixel[(int)state.y][(int)state.x] = 'O';
-        
-          //printgrid(&g); 
+          
     }
-   printgrid(&g); 
+    printgrid(&g); 
 }
 
 FWD parseFWD(prog* p)
@@ -521,13 +517,10 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     else if (state->y > GRID_HEIGHT) {
         state->y = GRID_HEIGHT -1;
     }
-
-    linedraw(x1, y1, x2, y2, g);
+    
     state->x = x2;
     state->y = y2;
-    
-
-
+    linedraw(x1, y1, x2, y2, g, state->colour);
 }
 
 void turn_rgt(TurtleState* state, RGT rgt_ins) {
@@ -544,7 +537,7 @@ void initilgrid(grid* g)
     }
 }
 
-void linedraw(int x1, int y1, int x2, int y2, grid* g)
+void linedraw(int x1, int y1, int x2, int y2, grid* g, char colour)
 {
     int dx = abs(x2 - x1);
     int dy = -abs(y2 - y1);
@@ -570,7 +563,7 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g)
 
     while (true)
     {
-        g->pixel[y1][x1] ='W';
+        g->pixel[y1][x1] = colour;
         if (x1 == x2 && y1 == y2) {
             break;
         }
@@ -591,15 +584,77 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g)
 
 }
 
-void printgrid(grid* g)
+// void printgrid(grid* g)
+// {
+//     for (int i = 0; i < GRID_HEIGHT; i++) {
+//     for (int j = 0; j < GRID_WIDTH; j++) {
+//         printf("%c", g->pixel[i][j]);
+//     }
+//     printf("\n");
+// }
+
+// }
+
+void set_col(TurtleState* state, COL col_interp)
 {
-    for (int i = 0; i < GRID_HEIGHT; i++) {
-    for (int j = 0; j < GRID_WIDTH; j++) {
-        printf("%c", g->pixel[i][j]);
+    if ((strcmp(col_interp.COL_postfix.word.str, "BLACK") == 0)) {
+        state->colour = 'K';
     }
-    printf("\n");
+    else if ((strcmp(col_interp.COL_postfix.word.str, "RED") == 0)) {
+        state->colour = 'R';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "GREEN") == 0)) {
+        state->colour = 'G';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "YELLOW") == 0)) {
+        state->colour = 'Y';
+    }
+     else if ((strcmp(col_interp.COL_postfix.word.str, "BLUE") == 0)) {
+        state->colour = 'B';
+    }
+     else if ((strcmp(col_interp.COL_postfix.word.str, "MAGENTA") == 0)) {
+        state->colour = 'M';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "CYAN") == 0)) {
+        state->colour = 'C';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "WHITE") == 0)) {
+        state->colour = 'W';
+    }
 }
 
+void printgrid(grid* g)
+{
+   
+    neillclrscrn();
+    neillcursorhome();
+    neillbgcol(black);
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            
+            switch (g->pixel[i][j]) {
+                case 'K': neillfgcol(black); break;
+                case 'R': neillfgcol(red); break;
+                case 'G': neillfgcol(green); break;
+                case 'Y': neillfgcol(yellow); break;
+                case 'B': neillfgcol(blue); break;
+                case 'M': neillfgcol(magenta); break;
+                case 'C': neillfgcol(cyan); break;
+                case 'W': neillfgcol(white); break;
+                default: neillreset(); break; 
+            }
+
+            
+            printf("%c", g->pixel[i][j]);
+
+            
+            neillreset();
+        }
+        printf("\n");
+    }
+
+    
+    neillbusywait(1.0);  
 }
 
 void test(void) 
