@@ -603,6 +603,8 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g, char colour)
 
 void printgrid(grid* g)
 {
+    neillclrscrn();
+    neillcursorhome();
     for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
         printf("%c", g->pixel[i][j]);
@@ -641,7 +643,6 @@ void set_col(TurtleState* state, COL col_interp)
     }
 }
 
-
 // void writetoFile(grid* g, const char* filename) {
 //     // open file in write functions 
 //     FILE* file = fopen(filename, "w");
@@ -659,13 +660,13 @@ void set_col(TurtleState* state, COL col_interp)
 
 // }
 
-
+// }
+// }
 // void printgrid(grid* g)
 // {
    
 //     neillclrscrn();
 //     neillcursorhome();
-//     neillbgcol(black);
 //     for (int i = 0; i < GRID_HEIGHT; i++) {
 //         for (int j = 0; j < GRID_WIDTH; j++) {
             
