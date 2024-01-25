@@ -281,6 +281,7 @@ void interp_set(stack* s, SET* set)
             stack_push(s, currentPFix->precurse.varnum.number);
             printf("%lf\n", currentPFix->precurse.varnum.number);
         }
+        
 
         
     }
@@ -306,10 +307,12 @@ void parsePOSTFIX(prog* p, SET* set) {
         }
 
         else if (isVARIABLE(p->input[p->current_count])) {
+            currentPFix->type = VARIABLE;
             currentPFix->precurse.varnum.variable = p->input[p->current_count][1];
     
         }
         else if (isOperation(p->input[p->current_count])) {
+            currentPFix->type = OPERATION;
             currentPFix->precurse.symbol = p->input[p->current_count][0];
             
         }

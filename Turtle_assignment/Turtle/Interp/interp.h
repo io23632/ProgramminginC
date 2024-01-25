@@ -24,6 +24,7 @@ typedef enum{
 typedef enum{
     NUMBER,
     VARIABLE,
+    OPERATION,
 }POSTFIXTYPE;
 
 typedef double NUM;
