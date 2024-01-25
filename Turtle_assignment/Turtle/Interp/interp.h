@@ -6,11 +6,12 @@
 #include <assert.h>
 #include <math.h>
 
+
 #define MAXTOKENSIZE 1000
 #define GRID_WIDTH 51
-//#define GRID_HEIGHT 33
-#define GRID_HEIGHT 100 // This workds
-//#define M_PI 3.14159265358979323846
+#define GRID_HEIGHT 33
+//#define GRID_HEIGHT 100 // This workds
+#define M_PI 3.14159265358979323846
 
 typedef enum{
     INS_FWD,
@@ -19,6 +20,11 @@ typedef enum{
     INS_SET,
     INS_LOOP,
 }INSTYPE;
+
+typedef enum{
+    NUMBER,
+    VARIABLE,
+}POSTFIXTYPE;
 
 typedef double NUM;
 typedef char LTR;
@@ -54,7 +60,7 @@ typedef struct LST{
 }LST;
 
 typedef struct PFix{
-    INSTYPE type;
+    POSTFIXTYPE type;
     union {
         Op symbol;
         VARNUM varnum;
@@ -116,7 +122,7 @@ typedef struct TurtleState{
 }TurtleState;
 
 typedef struct grid{
-    char pixel[GRID_HEIGHT][GRID_WIDTH];
+    char pixel[GRID_WIDTH][GRID_HEIGHT];
 }grid;
 
 
@@ -140,11 +146,13 @@ void freeINSLST(INSLST* head);
 void interp(INSLST* inslst, grid* g);
 void go_fwd(TurtleState* T, FWD fwd_interp, grid* g);
 void turn_rgt(TurtleState* T, RGT rgt_ins);
+bool inbounds(NUM x1, NUM y1);
 void linedraw(int x1, int y1, int x2, int y2, grid* g, char c);
 void initilgrid(grid* g);
 void printgrid(grid* g);
 void set_col(TurtleState* state, COL col_interp);
 //void writetoFile(grid* g, const char* filename);
-// void interp_set(TurtleState* T, SET set);
+
 // void interp_loop(TurtleState* T, LOOP loop_interp);
+
 void test(void);

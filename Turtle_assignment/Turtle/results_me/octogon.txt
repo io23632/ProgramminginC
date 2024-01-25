@@ -1,3 +1,4 @@
+[2J[H                                                   
                                                    
                                                    
                                                    
@@ -9,20 +10,19 @@
                                                    
                                                    
                                                    
-                            WWWWWW                 
-                           W      W                
-                         WW        W               
-                        W           W              
-                                     W             
-                          W          W             
-                          W          W             
-                          W          W             
-                          W          W             
-                          W          W             
-                          W         W              
-                           W        W              
-                            W      W               
-                             WWWWWW                
+                            GGGGGG                 
+                           G      G                
+                          G        G               
+                          G         G              
+                         O           G             
+                         G           G             
+                         G           G             
+                         G           G             
+                         G           G             
+                         G           G             
+                          G        GG              
+                           G      G                
+                            GGGGGG                 
                                                    
                                                    
                                                    

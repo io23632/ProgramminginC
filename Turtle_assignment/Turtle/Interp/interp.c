@@ -1,4 +1,4 @@
-#include "interp.h"
+#include "stack.h"
 #include "../neillsimplescreen.h"
 
 int main(int argc, char *argv[]) {
@@ -117,7 +117,8 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 
 void interp(INSLST* inslst, grid* g) {
 
-    TurtleState state = {25, 16, 90, true, 'W'};
+    TurtleState state = {25, 17, 90, true, 'W'};
+    stack* s = init_stack();
     initilgrid(g);
     while (inslst != NULL) {
         switch (inslst->type) {
@@ -133,18 +134,19 @@ void interp(INSLST* inslst, grid* g) {
             // case INS_LOOP:
             //     interp_loop(&state, inslst->ins.loop);
             //     break;
-            // case INS_SET:
-            //     interp_set(&state, inslst->ins.set);
-            //     break;
+            case INS_SET:
+                interp_set(s, &inslst->ins.set);
+                break;
             default:
                 fprintf(stderr, "Unrecognized instruction type\n");
                 break;
         }
         inslst = inslst->next;
-        //g.pixel[(int)state.y][(int)state.x] = 'O';
+        //g->pixel[(int)state.y][(int)state.x] = 'O';
+        //printgrid(g);
           
     }
-    printgrid(g);
+    free (s);
 }
 
 FWD parseFWD(prog* p)
@@ -268,6 +270,23 @@ return set;
 
 }
 
+void interp_set(stack* s, SET* set)
+{
+    
+
+    for (int i = 0 ; i < set->postfix_count; i++) {
+        PFix* currentPFix = &set->postfix[i];
+
+        if (currentPFix->type == NUMBER) {
+            stack_push(s, currentPFix->precurse.varnum.number);
+            printf("%lf\n", currentPFix->precurse.varnum.number);
+        }
+
+        
+    }
+
+}
+
 void parsePOSTFIX(prog* p, SET* set) {
 
     while (strcmp(p->input[p->current_count], ")") != 0) {
@@ -279,6 +298,7 @@ void parsePOSTFIX(prog* p, SET* set) {
         PFix* currentPFix = &set->postfix[set->postfix_count];
 
         if (isNUMBER(p->input[p->current_count])) {
+            currentPFix->type = NUMBER;
             if (sscanf(p->input[p->current_count], "%lf", &currentPFix->precurse.varnum.number) != 1) {
                 fprintf(stderr, "Invalid number in postfix expression\n");
                 exit(1);
@@ -494,17 +514,16 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     // assuming the turtel state in initlised in main to be: 
     // Turtle state = { .x = 25, .y = 16, .angle = 90}
 
-    double distance = round(fwd_interp.varnum.number);
+    double distance = fwd_interp.varnum.number;
     double radianANgle = state->angle * M_PI / 180.0;
 
-    int x1 = state->x;
-    int y1 = state->y;
+    NUM x1 = state->x;
+    NUM y1 = state->y;
     state->pen = true;
 
-    int x2 = x1 + distance * cos(radianANgle);
-    int y2 = y1 + distance * sin(radianANgle);
+    NUM x2 = x1 + distance * round(cos(radianANgle));
+    NUM y2 = y1 + distance * round(sin(radianANgle));
 
-  
     // if (state->x < 0) {
     //     state->x = 0;
     // }
@@ -519,25 +538,23 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     //     state->y = GRID_HEIGHT - 1;
     // }
 
-    if (x1 < 0) {
-        x1 = 0;
-    }
-    else if (x1 >= GRID_WIDTH){
-        x1 = GRID_WIDTH -1;
-    }
+    // if (x1 < 0) {
+    //     x1 = 0;
+    // }
+    // else if (x1 >= GRID_WIDTH){
+    //     x1 = GRID_WIDTH -1;
+    // }
 
-    if (y1 < 0) {
-        y1 = 0;
-    }
-    else if (y1 >= GRID_HEIGHT) {
-        y1 = GRID_HEIGHT - 1;
-    }
-    
+    // if (y1 < 0) {
+    //     y1 = 0;
+    // }
+    // else if (y1 >= GRID_HEIGHT) {
+    //     y1 = GRID_HEIGHT - 1;
+    // }
+    linedraw(x1, y1, x2, y2, g, state->colour);
+    printgrid(g);
     state->x = x2;
     state->y = y2;
-    linedraw(x1, y1, x2, y2, g, state->colour);
-    // state->x = x2;
-    // state->y = y2;
 }
 
 void turn_rgt(TurtleState* state, RGT rgt_ins) {
@@ -545,23 +562,62 @@ void turn_rgt(TurtleState* state, RGT rgt_ins) {
     state->angle = state->angle - rgt_ins.varnum.number;
 }
 
+stack* init_stack(void)
+{
+    stack* s = (stack*)malloc(sizeof(stack));
+    if(s == NULL) {
+        fprintf(stderr, "Memory allocation failure");
+    }
+    s->size = 0;
+    return s;
+}
+
+void stack_push(stack* s, NUM number)
+{
+    if (s->size >= MAXTOKENSIZE) {
+        fprintf(stderr, "Stack is full"); 
+        exit(1);   
+    }
+
+    s->arr[s->size] = number;
+    s->size++;
+
+}
+
 void initilgrid(grid* g)
 {
     for (int i = 0; i < GRID_HEIGHT; i++) {
         for (int j = 0; j < GRID_WIDTH; j++) {
-            g->pixel[i][j] = ' ';
+            g->pixel[j][i] = ' ';
         }
     }
 }
 
+bool inbounds(NUM x1, NUM y1)
+{
+    if (x1 < 0) {
+        x1 = 0;
+    }
+    if (y1 < 0) {
+        y1 = 0;
+    }
+    if (x1 >= GRID_WIDTH) {
+        x1 = GRID_WIDTH - 1;
+    }
+    if (y1 >= GRID_HEIGHT) {
+        y1 = GRID_HEIGHT - 1;
+    }
+    return true;
+}
+
 void linedraw(int x1, int y1, int x2, int y2, grid* g, char colour)
 {
-    int dx = abs(x2 - x1);
-    int dy = -abs(y2 - y1);
+    NUM dx = fabs(x2 - x1);
+    NUM dy = -fabs(y2 - y1);
     int sx;
     int sy;
 
-    if (x1 < x2) {
+    if (x1 <= x2) {
         sx = 1;
     }
     else {
@@ -580,21 +636,29 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g, char colour)
 
     while (true)
     {
-        g->pixel[y1][x1] = colour;
-        if (x1 == x2 && y1 == y2) {
+
+        if ((inbounds(x1, y1))) 
+        {
+            g->pixel[x1][y1] = colour;
+            if (x1 == x2 && y1 == y2) {
             break;
+            }
+            e2 = P * 2;
+            if (e2 >= dy) {
+                P = P + dy;
+                x1 = x1 + sx;
+            
+            }
+            if (e2 <= dx) {
+                P = P + dx;
+                y1 = y1 + sy;
+            }
+
         }
 
-        e2 = P * 2;
-        if (e2 >= dy) {
-            P = P + dy;
-            x1 = x1 + sx;
-            
-        }
-        if (e2 <= dx) {
-            P = P + dx;
-            y1 = y1 + sy;
-            
+        else {
+            fprintf(stderr, "Co-ordinates out of bound");
+            exit(1);
         }
 
     }
@@ -607,11 +671,12 @@ void printgrid(grid* g)
     neillcursorhome();
     for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
-        printf("%c", g->pixel[i][j]);
+        printf("%c", g->pixel[j][i]);
+        
     }
     printf("\n");
 }
-
+neillbusywait(1.0); 
 }
 
 void set_col(TurtleState* state, COL col_interp)
@@ -641,60 +706,12 @@ void set_col(TurtleState* state, COL col_interp)
     else if ((strcmp(col_interp.COL_postfix.word.str, "WHITE") == 0)) {
         state->colour = 'W';
     }
+
+    else {
+        fprintf(stderr, "Colour not recognised\n");
+        exit(1);
+    }
 }
-
-// void writetoFile(grid* g, const char* filename) {
-//     // open file in write functions 
-//     FILE* file = fopen(filename, "w");
-
-//     if(file == NULL) {
-//         fprintf(stderr, "Error opening file\n");
-//     }
-
-//     for (int i = 0; i < GRID_HEIGHT; i++) {
-//         for (int j = 0; j < GRID_WIDTH; j++) {
-//             fputc(g->pixel[i][j], file);
-//         }
-    
-//     }
-
-// }
-
-// }
-// }
-// void printgrid(grid* g)
-// {
-   
-//     neillclrscrn();
-//     neillcursorhome();
-//     for (int i = 0; i < GRID_HEIGHT; i++) {
-//         for (int j = 0; j < GRID_WIDTH; j++) {
-            
-//             switch (g->pixel[i][j]) {
-//                 case 'K': neillfgcol(black);
-//                 break;
-//                 case 'R': neillfgcol(red); break;
-//                 case 'G': neillfgcol(green); break;
-//                 case 'Y': neillfgcol(yellow); break;
-//                 case 'B': neillfgcol(blue); break;
-//                 case 'M': neillfgcol(magenta); break;
-//                 case 'C': neillfgcol(cyan); break;
-//                 case 'W': neillfgcol(white); break;
-//                 default: neillreset(); break; 
-//             }
-
-            
-//             printf("%c", g->pixel[i][j]);
-
-            
-//             neillreset();
-//         }
-//         printf("\n");
-//     }
-
-    
-//     neillbusywait(1.0);  
-// }
 
 void test(void) 
 {
