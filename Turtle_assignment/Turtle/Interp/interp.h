@@ -111,6 +111,7 @@ typedef struct TurtleState{
     NUM y;
     NUM angle;
     bool pen;
+    char colour; 
 }TurtleState;
 
 typedef struct grid{
@@ -141,7 +142,7 @@ void turn_rgt(TurtleState* T, RGT rgt_ins);
 void linedraw(int x1, int y1, int x2, int y2, grid* g);
 void initilgrid(grid* g);
 void printgrid(grid* g);
-// void slct_col(COL col_interp);
+// void set_col(TrutleState* state, COL col_interp);
 // void interp_set(TurtleState* T, SET set);
 // void interp_loop(TurtleState* T, LOOP loop_interp);
 void test(void);

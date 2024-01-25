@@ -17,20 +17,7 @@ int main(int argc, char *argv[]) {
     
     prog p;
     p.current_count = 0;
-    // prog* p = (prog*)malloc(sizeof(prog));
-    // if (p == NULL) {
-    //     fprintf(stderr, "Memory allocation failure\n");
-    //     fclose(file);
-    //     return 1;
-    // }
-    // p->current_count = 0;
-
-    // TurtleState* state = (TurtleState*)malloc(sizeof(TurtleState));
-    // state->x = 0;
-    // state->y = 0;
-    // state->angle = 45;
-    // state->pen = false;
-
+   
     int i = 0;
     while (fscanf(file, "%s", p.input[i]) == 1)
     {
@@ -51,10 +38,8 @@ int main(int argc, char *argv[]) {
         interp(head);
     }
      
-    
-
     freeINSLST(head);
-    //free(p);
+    
 
 
     return 0;
@@ -70,7 +55,6 @@ void parsePROG(prog* p, INSLST** head)
 
     p->current_count++;
     parseINSLST(p, head);
-    //printgrid(&g);
     
 }
 
@@ -135,7 +119,7 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 
 void interp(INSLST* inslst) {
 
-    TurtleState state = {25, 16, 90, true};
+    TurtleState state = {26, 16, 90, true};
     grid g;
     initilgrid(&g);
     while (inslst != NULL) {
@@ -160,11 +144,11 @@ void interp(INSLST* inslst) {
                 break;
         }
         inslst = inslst->next;
-        g.pixel[(int)state.y][(int)state.x] = 'O';
-        printgrid(&g); 
-          
+        //g.pixel[(int)state.y][(int)state.x] = 'O';
+        
+          //printgrid(&g); 
     }
-    
+   printgrid(&g); 
 }
 
 FWD parseFWD(prog* p)
@@ -514,8 +498,15 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     // assuming the turtel state in initlised in main to be: 
     // Turtle state = { .x = 25, .y = 16, .angle = 90}
 
-    double distance = fwd_interp.varnum.number;
+    double distance = round(fwd_interp.varnum.number);
     double radianANgle = state->angle * M_PI / 180.0;
+
+    int x1 = state->x;
+    int y1 = state->y;
+    state->pen = true;
+
+    int x2 = x1 + distance * cos(radianANgle);
+    int y2 = y1 + distance * sin(radianANgle);
 
     if (state->x < 0) {
         state->x = 0;
@@ -530,16 +521,11 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     else if (state->y > GRID_HEIGHT) {
         state->y = GRID_HEIGHT -1;
     }
-    
-    int x1 = state->x;
-    int y1 = state->y;
-    state->pen = true;
 
-    int x2 = x1 + distance * cos(radianANgle);
-    int y2 = y1 + distance * sin(radianANgle);
+    linedraw(x1, y1, x2, y2, g);
     state->x = x2;
     state->y = y2;
-    linedraw(x1, y1, x2, y2, g);
+    
 
 
 }
@@ -584,18 +570,21 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g)
 
     while (true)
     {
-        g->pixel[y1][x1] ='*';
+        g->pixel[y1][x1] ='W';
         if (x1 == x2 && y1 == y2) {
             break;
         }
+
         e2 = P * 2;
         if (e2 >= dy) {
             P = P + dy;
             x1 = x1 + sx;
+            
         }
         if (e2 <= dx) {
             P = P + dx;
             y1 = y1 + sy;
+            
         }
 
     }
