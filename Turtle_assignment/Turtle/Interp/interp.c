@@ -25,23 +25,24 @@ int main(int argc, char *argv[]) {
     }
 
     INSLST* head = NULL;
+    grid g;
     // if the input is: ./interp.c <inputfile.ttl> <outputfile.txt>: print results to text file
     if (argc == 3) {
         freopen(argv[2], "w", stdout);
         parsePROG(&p, &head);
-        interp(head);
+        interp(head, &g);
+        //writetoFile(&g, argv[2]);
         fclose(stdout);
     }
     // if the input is: ./interp.c <inputfile.ttl>: print results to screen
     else if (argc == 2) {
         parsePROG(&p, &head);
-        interp(head);
+        interp(head, &g);
     }
     freeINSLST(head);
     
     return 0;
 }
-
 
 void parsePROG(prog* p, INSLST** head)
 {
@@ -114,15 +115,14 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 
 }
 
-void interp(INSLST* inslst) {
+void interp(INSLST* inslst, grid* g) {
 
-    TurtleState state = {26, 16, 90, true, 'W'};
-    grid g;
-    initilgrid(&g);
+    TurtleState state = {25, 16, 90, true, 'W'};
+    initilgrid(g);
     while (inslst != NULL) {
         switch (inslst->type) {
             case INS_FWD:
-                go_fwd(&state, inslst->ins.fwd, &g);
+                go_fwd(&state, inslst->ins.fwd, g);
                 break;
             case INS_RGT:
                 turn_rgt(&state, inslst->ins.rgt);
@@ -144,7 +144,7 @@ void interp(INSLST* inslst) {
         //g.pixel[(int)state.y][(int)state.x] = 'O';
           
     }
-    printgrid(&g); 
+    printgrid(g);
 }
 
 FWD parseFWD(prog* p)
@@ -504,23 +504,40 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     int x2 = x1 + distance * cos(radianANgle);
     int y2 = y1 + distance * sin(radianANgle);
 
-    if (state->x < 0) {
-        state->x = 0;
+  
+    // if (state->x < 0) {
+    //     state->x = 0;
+    // }
+    // else if (state->x >= GRID_WIDTH){
+    //     state->x = GRID_WIDTH -1;
+    // }
+
+    // if (state->y < 0) {
+    //     state->y = 0;
+    // }
+    // else if (state->y >= GRID_HEIGHT) {
+    //     state->y = GRID_HEIGHT - 1;
+    // }
+
+    if (x1 < 0) {
+        x1 = 0;
     }
-    else if (state->x > GRID_WIDTH){
-        state->x = GRID_WIDTH -1;
+    else if (x1 >= GRID_WIDTH){
+        x1 = GRID_WIDTH -1;
     }
 
-    if (state->y < 0) {
-        state->y = 0;
+    if (y1 < 0) {
+        y1 = 0;
     }
-    else if (state->y > GRID_HEIGHT) {
-        state->y = GRID_HEIGHT -1;
+    else if (y1 >= GRID_HEIGHT) {
+        y1 = GRID_HEIGHT - 1;
     }
     
     state->x = x2;
     state->y = y2;
     linedraw(x1, y1, x2, y2, g, state->colour);
+    // state->x = x2;
+    // state->y = y2;
 }
 
 void turn_rgt(TurtleState* state, RGT rgt_ins) {
@@ -584,19 +601,20 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g, char colour)
 
 }
 
-// void printgrid(grid* g)
-// {
-//     for (int i = 0; i < GRID_HEIGHT; i++) {
-//     for (int j = 0; j < GRID_WIDTH; j++) {
-//         printf("%c", g->pixel[i][j]);
-//     }
-//     printf("\n");
-// }
+void printgrid(grid* g)
+{
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+    for (int j = 0; j < GRID_WIDTH; j++) {
+        printf("%c", g->pixel[i][j]);
+    }
+    printf("\n");
+}
 
-// }
+}
 
 void set_col(TurtleState* state, COL col_interp)
 {
+    // create a enum instead
     if ((strcmp(col_interp.COL_postfix.word.str, "BLACK") == 0)) {
         state->colour = 'K';
     }
@@ -623,39 +641,59 @@ void set_col(TurtleState* state, COL col_interp)
     }
 }
 
-void printgrid(grid* g)
-{
+
+// void writetoFile(grid* g, const char* filename) {
+//     // open file in write functions 
+//     FILE* file = fopen(filename, "w");
+
+//     if(file == NULL) {
+//         fprintf(stderr, "Error opening file\n");
+//     }
+
+//     for (int i = 0; i < GRID_HEIGHT; i++) {
+//         for (int j = 0; j < GRID_WIDTH; j++) {
+//             fputc(g->pixel[i][j], file);
+//         }
+    
+//     }
+
+// }
+
+
+// void printgrid(grid* g)
+// {
    
-    neillclrscrn();
-    neillcursorhome();
-    neillbgcol(black);
-    for (int i = 0; i < GRID_HEIGHT; i++) {
-        for (int j = 0; j < GRID_WIDTH; j++) {
+//     neillclrscrn();
+//     neillcursorhome();
+//     neillbgcol(black);
+//     for (int i = 0; i < GRID_HEIGHT; i++) {
+//         for (int j = 0; j < GRID_WIDTH; j++) {
             
-            switch (g->pixel[i][j]) {
-                case 'K': neillfgcol(black); break;
-                case 'R': neillfgcol(red); break;
-                case 'G': neillfgcol(green); break;
-                case 'Y': neillfgcol(yellow); break;
-                case 'B': neillfgcol(blue); break;
-                case 'M': neillfgcol(magenta); break;
-                case 'C': neillfgcol(cyan); break;
-                case 'W': neillfgcol(white); break;
-                default: neillreset(); break; 
-            }
+//             switch (g->pixel[i][j]) {
+//                 case 'K': neillfgcol(black);
+//                 break;
+//                 case 'R': neillfgcol(red); break;
+//                 case 'G': neillfgcol(green); break;
+//                 case 'Y': neillfgcol(yellow); break;
+//                 case 'B': neillfgcol(blue); break;
+//                 case 'M': neillfgcol(magenta); break;
+//                 case 'C': neillfgcol(cyan); break;
+//                 case 'W': neillfgcol(white); break;
+//                 default: neillreset(); break; 
+//             }
 
             
-            printf("%c", g->pixel[i][j]);
+//             printf("%c", g->pixel[i][j]);
 
             
-            neillreset();
-        }
-        printf("\n");
-    }
+//             neillreset();
+//         }
+//         printf("\n");
+//     }
 
     
-    neillbusywait(1.0);  
-}
+//     neillbusywait(1.0);  
+// }
 
 void test(void) 
 {
