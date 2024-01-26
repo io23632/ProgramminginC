@@ -5,10 +5,13 @@
 #include <ctype.h>
 #include <assert.h>
 #include <math.h>
+#include "env.h"
+//#include "stack.h"
 
 #define MAXTOKENSIZE 1000
 #define GRID_WIDTH 51
 #define GRID_HEIGHT 33
+// #define GRID_HEIGHT 100 // This workds
 //#define M_PI 3.14159265358979323846
 
 typedef enum{
@@ -18,6 +21,12 @@ typedef enum{
     INS_SET,
     INS_LOOP,
 }INSTYPE;
+
+typedef enum{
+    NUMBER,
+    VARIABLE,
+    OPERATION,
+}POSTFIXTYPE;
 
 typedef double NUM;
 typedef char LTR;
@@ -40,12 +49,13 @@ typedef struct WORD {
 }WORD;
 
 typedef struct ITEM{
-    INSTYPE type;
+    INSTYPE type; // ITEM TYPE 
     union {
         VARNUM varnum;
         WORD word;
+        LTR letter;
     }items;
-}ITEM;
+}ITEM; 
 
 typedef struct LST{
     ITEM item_data[MAXTOKENSIZE];
@@ -53,7 +63,7 @@ typedef struct LST{
 }LST;
 
 typedef struct PFix{
-    INSTYPE type;
+    POSTFIXTYPE type;
     union {
         Op symbol;
         VARNUM varnum;
@@ -87,11 +97,11 @@ typedef struct FWD{
 
 
 typedef struct LOOP {
-    INSTYPE type;
+    INSTYPE type; // delete INSTYPE
     LTR loop_variable;            // The loop variable
     LST* loop_set;                // The set of values to iterate over
     INSLST* loop_body;            // Pointer to the first instruction in the loop body
-    struct LOOP* next;            // Pointer to the next LOOP or instruction
+    // struct LOOP* next;   
 }LOOP;
 
 struct INSLST{
@@ -111,11 +121,18 @@ typedef struct TurtleState{
     NUM y;
     NUM angle;
     bool pen;
+    char colour; 
 }TurtleState;
 
 typedef struct grid{
-    char pixel[GRID_HEIGHT][GRID_WIDTH];
+    char pixel[GRID_WIDTH][GRID_HEIGHT];
 }grid;
+
+typedef struct stack
+{
+    NUM arr[MAXTOKENSIZE];
+    int size;
+}stack;
 
 
 void parsePROG(prog* p, INSLST** head);
@@ -135,13 +152,23 @@ LST parseLST(prog* p);
 void parseITEM(prog* p, LST* list);
 void freeINSLST(INSLST* head);
 //////////Interpreter functions//////
-void interp(INSLST* inslst);
+void interp(INSLST* inslst, TurtleState* state, env_t* e, grid* g);
 void go_fwd(TurtleState* T, FWD fwd_interp, grid* g);
 void turn_rgt(TurtleState* T, RGT rgt_ins);
+bool inbounds(NUM x1, NUM y1);
 void linedraw(int x1, int y1, int x2, int y2, grid* g, char c);
 void initilgrid(grid* g);
 void printgrid(grid* g);
-// void slct_col(COL col_interp);
-// void interp_set(TurtleState* T, SET set);
+void set_col(TurtleState* state, COL col_interp);
+void interp_loop(LOOP* loop, TurtleState* state, env_t* e, grid* g);
+void interp_set_env(env_t* e, SET* s);
+//void writetoFile(grid* g, const char* filename);
+
 // void interp_loop(TurtleState* T, LOOP loop_interp);
+
+stack* init_stack(void);
+void stack_push(stack* s, NUM number);
+void interp_set(stack* s, SET* set);
+
+
 void test(void);

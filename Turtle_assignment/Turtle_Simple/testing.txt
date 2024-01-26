@@ -42,8 +42,6 @@ typedef struct PROG{
 
 > 
 
-
-
 // TESTING
 
 > I started the assertion tests early on, however found testing parse functions via assertions a bit tricky, will come back to this, 
@@ -54,9 +52,22 @@ this up, but the logic does not seem to be working.
 > Another thing that tripped me up was the presence of space in the postfix expression, my code would work for e.g. SET A ( $A ) but not SET A ($A) this took consirdable time to figure out what the issue was
 > I learnt that rather than writing complex test cases, I could have figured this out via printint out my tokens from a simple line : //printf("Token %d: '%s'\n", i, p->input[i]); // Debug print
 
+> I tested my parser with various TTL Files that had deliberate mistakes to make sure they did not parse , e.g.:
+//
+BEGIN 
+FORWARD 10 
+END
+//
 
 
 
 // New things I learnt
 
 > cannot use switch case where the expression is a string therefore the INSLST function has to be a if else ladder 
+
+
+
+///// interpreter:
+
+
+> 

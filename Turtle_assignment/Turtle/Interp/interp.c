@@ -1,5 +1,7 @@
+//#include "stack.h"
 #include "interp.h"
 #include "../neillsimplescreen.h"
+
 
 int main(int argc, char *argv[]) {
     test();
@@ -17,20 +19,7 @@ int main(int argc, char *argv[]) {
     
     prog p;
     p.current_count = 0;
-    // prog* p = (prog*)malloc(sizeof(prog));
-    // if (p == NULL) {
-    //     fprintf(stderr, "Memory allocation failure\n");
-    //     fclose(file);
-    //     return 1;
-    // }
-    // p->current_count = 0;
-
-    // TurtleState* state = (TurtleState*)malloc(sizeof(TurtleState));
-    // state->x = 0;
-    // state->y = 0;
-    // state->angle = 45;
-    // state->pen = false;
-
+   
     int i = 0;
     while (fscanf(file, "%s", p.input[i]) == 1)
     {
@@ -38,26 +27,29 @@ int main(int argc, char *argv[]) {
     }
 
     INSLST* head = NULL;
+    env_t e;
+    grid g;
+    TurtleState state = {25, 17, 90, true, 'W'};
+    initilgrid(&g);
+    init_env(&e);
+
     // if the input is: ./interp.c <inputfile.ttl> <outputfile.txt>: print results to text file
     if (argc == 3) {
         freopen(argv[2], "w", stdout);
         parsePROG(&p, &head);
-        interp(head);
+        interp(head, &state, &e, &g);
+        //writetoFile(&g, argv[2]);
         fclose(stdout);
     }
     // if the input is: ./interp.c <inputfile.ttl>: print results to screen
     else if (argc == 2) {
         parsePROG(&p, &head);
-        interp(head);
+        interp(head, &state, &e, &g);
     }
-
     freeINSLST(head);
-    //free(p);
-
-
+    
     return 0;
 }
-
 
 void parsePROG(prog* p, INSLST** head)
 {
@@ -68,7 +60,6 @@ void parsePROG(prog* p, INSLST** head)
 
     p->current_count++;
     parseINSLST(p, head);
-    //printgrid(&g);
     
 }
 
@@ -131,38 +122,34 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 
 }
 
-void interp(INSLST* inslst) {
+void interp(INSLST* inslst, TurtleState* state, env_t* e, grid* g) {
 
-    TurtleState state = {25, 16, 90, true};
-    grid g;
-    initilgrid(&g);
     while (inslst != NULL) {
         switch (inslst->type) {
             case INS_FWD:
-                go_fwd(&state, inslst->ins.fwd, &g);
+                go_fwd(state, inslst->ins.fwd, g);
                 break;
             case INS_RGT:
-                turn_rgt(&state, inslst->ins.rgt);
+                turn_rgt(state, inslst->ins.rgt);
                 break;
-            // case INS_COL:
-            //     slct_col(inslst->ins.col);
-            //     break;
-            // case INS_LOOP:
-            //     interp_loop(&state, inslst->ins.loop);
-            //     break;
-            // case INS_SET:
-            //     interp_set(&state, inslst->ins.set);
-            //     break;
+            case INS_COL:
+                set_col(state, inslst->ins.col);
+                break;
+            case INS_LOOP:
+                interp_loop(&inslst->ins.loop, state, e, g);
+                break;
+            case INS_SET:
+                interp_set_env(e, &inslst->ins.set);
+                break;
             default:
                 fprintf(stderr, "Unrecognized instruction type\n");
                 break;
         }
         inslst = inslst->next;
-        //g.pixel[(int)state.y][(int)state.x] = 'O';
-        
+        //g->pixel[(int)state.y][(int)state.x] = 'O';
+        //printgrid(g);
           
     }
-    printgrid(&g); 
 }
 
 FWD parseFWD(prog* p)
@@ -286,6 +273,51 @@ return set;
 
 }
 
+void interp_set_env(env_t* e, SET* s)
+{
+
+set_key(e, s->letter, 0); // calculate the value of the postfix expression. (instead of 0) 
+
+}
+
+void interp_loop(LOOP* loop, TurtleState* state, env_t* e, grid* g) 
+{
+
+for (int i = 0; i < loop->loop_set->list_count; i++) {
+    set_key(e, loop->loop_variable, loop->loop_set->item_data[i].items.varnum.number); 
+    // Tweek this: items.varnum.number = atom, where atom is a struct, with 1 field which has a type, and a union of variables and values. 
+    interp(loop->loop_body, state, e, g);
+}
+
+
+}
+
+// Write a evaluater: needs to calculate the value of hte postfix expression. recursive 
+// atomic expressions can exist as variables, numbers, letters of words. described via a strucuture, which includes a type
+// in the environment any atomic expression has a value. 
+// two unions, one is called value : number letter or word 
+//              atom: variable or a value 
+// environment stores values, atom can be turned into a value as long as you have a envirnment. 
+// S
+
+void interp_set(stack* s, SET* set)
+{
+    
+
+    for (int i = 0 ; i < set->postfix_count; i++) {
+        PFix* currentPFix = &set->postfix[i];
+
+        if (currentPFix->type == NUMBER) {
+            stack_push(s, currentPFix->precurse.varnum.number);
+            printf("%lf\n", currentPFix->precurse.varnum.number);
+        }
+        
+
+        
+    }
+
+}
+
 void parsePOSTFIX(prog* p, SET* set) {
 
     while (strcmp(p->input[p->current_count], ")") != 0) {
@@ -297,6 +329,7 @@ void parsePOSTFIX(prog* p, SET* set) {
         PFix* currentPFix = &set->postfix[set->postfix_count];
 
         if (isNUMBER(p->input[p->current_count])) {
+            currentPFix->type = NUMBER;
             if (sscanf(p->input[p->current_count], "%lf", &currentPFix->precurse.varnum.number) != 1) {
                 fprintf(stderr, "Invalid number in postfix expression\n");
                 exit(1);
@@ -304,10 +337,12 @@ void parsePOSTFIX(prog* p, SET* set) {
         }
 
         else if (isVARIABLE(p->input[p->current_count])) {
+            currentPFix->type = VARIABLE;
             currentPFix->precurse.varnum.variable = p->input[p->current_count][1];
     
         }
         else if (isOperation(p->input[p->current_count])) {
+            currentPFix->type = OPERATION;
             currentPFix->precurse.symbol = p->input[p->current_count][0];
             
         }
@@ -515,31 +550,44 @@ void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
     double distance = fwd_interp.varnum.number;
     double radianANgle = state->angle * M_PI / 180.0;
 
-    if (state->x < 0) {
-        state->x = 0;
-    }
-    else if (state->x > GRID_WIDTH){
-        state->x = GRID_WIDTH -1;
-    }
-
-    if (state->y < 0) {
-        state->y = 0;
-    }
-    else if (state->y > GRID_HEIGHT) {
-        state->y = GRID_HEIGHT -1;
-    }
-    
-    int x1 = state->x;
-    int y1 = state->y;
+    NUM x1 = state->x;
+    NUM y1 = state->y;
     state->pen = true;
 
-    int x2 = x1 + distance * cos(radianANgle);
-    int y2 = y1 + distance * sin(radianANgle);
+    NUM x2 = x1 + distance * round(cos(radianANgle));
+    NUM y2 = y1 + distance * round(sin(radianANgle));
+
+    // if (state->x < 0) {
+    //     state->x = 0;
+    // }
+    // else if (state->x >= GRID_WIDTH){
+    //     state->x = GRID_WIDTH -1;
+    // }
+
+    // if (state->y < 0) {
+    //     state->y = 0;
+    // }
+    // else if (state->y >= GRID_HEIGHT) {
+    //     state->y = GRID_HEIGHT - 1;
+    // }
+
+    // if (x1 < 0) {
+    //     x1 = 0;
+    // }
+    // else if (x1 >= GRID_WIDTH){
+    //     x1 = GRID_WIDTH -1;
+    // }
+
+    // if (y1 < 0) {
+    //     y1 = 0;
+    // }
+    // else if (y1 >= GRID_HEIGHT) {
+    //     y1 = GRID_HEIGHT - 1;
+    // }
+    linedraw(x1, y1, x2, y2, g, state->colour);
+    printgrid(g);
     state->x = x2;
     state->y = y2;
-    linedraw(x1, y1, x2, y2, g, 'W');
-
-
 }
 
 void turn_rgt(TurtleState* state, RGT rgt_ins) {
@@ -547,23 +595,62 @@ void turn_rgt(TurtleState* state, RGT rgt_ins) {
     state->angle = state->angle - rgt_ins.varnum.number;
 }
 
+stack* init_stack(void)
+{
+    stack* s = (stack*)malloc(sizeof(stack));
+    if(s == NULL) {
+        fprintf(stderr, "Memory allocation failure");
+    }
+    s->size = 0;
+    return s;
+}
+
+void stack_push(stack* s, NUM number)
+{
+    if (s->size >= MAXTOKENSIZE) {
+        fprintf(stderr, "Stack is full"); 
+        exit(1);   
+    }
+
+    s->arr[s->size] = number;
+    s->size++;
+
+}
+
 void initilgrid(grid* g)
 {
     for (int i = 0; i < GRID_HEIGHT; i++) {
         for (int j = 0; j < GRID_WIDTH; j++) {
-            g->pixel[i][j] = ' ';
+            g->pixel[j][i] = ' ';
         }
     }
 }
 
-void linedraw(int x1, int y1, int x2, int y2, grid* g, char c)
+bool inbounds(NUM x1, NUM y1)
 {
-    int dx = abs(x2 - x1);
-    int dy = -abs(y2 - y1);
+    if (x1 < 0) {
+        x1 = 0;
+    }
+    if (y1 < 0) {
+        y1 = 0;
+    }
+    if (x1 >= GRID_WIDTH) {
+        x1 = GRID_WIDTH - 1;
+    }
+    if (y1 >= GRID_HEIGHT) {
+        y1 = GRID_HEIGHT - 1;
+    }
+    return true;
+}
+
+void linedraw(int x1, int y1, int x2, int y2, grid* g, char colour)
+{
+    NUM dx = abs(x2 - x1);
+    NUM dy = -abs(y2 - y1);
     int sx;
     int sy;
 
-    if (x1 < x2) {
+    if (x1 <= x2) {
         sx = 1;
     }
     else {
@@ -582,69 +669,81 @@ void linedraw(int x1, int y1, int x2, int y2, grid* g, char c)
 
     while (true)
     {
-        g->pixel[y1][x1] = c;
-        if (x1 == x2 && y1 == y2) {
+
+        if ((inbounds(x1, y1))) 
+        {
+            g->pixel[x1][y1] = colour;
+            if (x1 == x2 && y1 == y2) {
             break;
+            }
+            e2 = P * 2;
+            if (e2 >= dy) {
+                P = P + dy;
+                x1 = x1 + sx;
+            
+            }
+            if (e2 <= dx) {
+                P = P + dx;
+                y1 = y1 + sy;
+            }
+
         }
-        e2 = P * 2;
-        if (e2 >= dy) {
-            P = P + dy;
-            x1 = x1 + sx;
-        }
-        if (e2 <= dx) {
-            P = P + dx;
-            y1 = y1 + sy;
+
+        else {
+            fprintf(stderr, "Co-ordinates out of bound");
+            exit(1);
         }
 
     }
 
 }
 
-// void printgrid(grid* g)
-// {
-//     for (int i = 0; i < GRID_HEIGHT; i++) {
-//     for (int j = 0; j < GRID_WIDTH; j++) {
-//         printf("%c", g->pixel[i][j]);
-//     }
-//     printf("\n");
-// }
-
-// }
-
-
-
 void printgrid(grid* g)
 {
-   
     neillclrscrn();
     neillcursorhome();
-    neillbgcol(black);
     for (int i = 0; i < GRID_HEIGHT; i++) {
-        for (int j = 0; j < GRID_WIDTH; j++) {
-            
-            switch (g->pixel[i][j]) {
-                case 'K': neillfgcol(black); break;
-                case 'R': neillfgcol(red); break;
-                case 'G': neillfgcol(green); break;
-                case 'Y': neillfgcol(yellow); break;
-                case 'B': neillfgcol(blue); break;
-                case 'M': neillfgcol(magenta); break;
-                case 'C': neillfgcol(cyan); break;
-                case 'W': neillfgcol(white); break;
-                default: neillreset(); break; 
-            }
+    for (int j = 0; j < GRID_WIDTH; j++) {
+        printf("%c", g->pixel[j][i]);
+        
+    }
+    printf("\n");
+}
+neillbusywait(1.0); 
+}
 
-            
-            printf("%c", g->pixel[i][j]);
-
-            
-            neillreset();
-        }
-        printf("\n");
+void set_col(TurtleState* state, COL col_interp)
+{
+    // create a enum instead
+    if ((strcmp(col_interp.COL_postfix.word.str, "BLACK") == 0)) {
+        state->colour = 'K';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "RED") == 0)) {
+        state->colour = 'R';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "GREEN") == 0)) {
+        state->colour = 'G';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "YELLOW") == 0)) {
+        state->colour = 'Y';
+    }
+     else if ((strcmp(col_interp.COL_postfix.word.str, "BLUE") == 0)) {
+        state->colour = 'B';
+    }
+     else if ((strcmp(col_interp.COL_postfix.word.str, "MAGENTA") == 0)) {
+        state->colour = 'M';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "CYAN") == 0)) {
+        state->colour = 'C';
+    }
+    else if ((strcmp(col_interp.COL_postfix.word.str, "WHITE") == 0)) {
+        state->colour = 'W';
     }
 
-    
-    neillbusywait(1.0);  
+    else {
+        fprintf(stderr, "Colour not recognised\n");
+        exit(1);
+    }
 }
 
 void test(void) 

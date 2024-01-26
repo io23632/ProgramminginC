@@ -1,13 +1,17 @@
 START
     FORWARD 5
     RIGHT 45
-    COLOUR "BLACK"
-    COLOUR "17"
-    COLOUR 100
-    SET A ( $B )
-    SET B ( $C 1+ )
-    LOOP A OVER { 1 2 3 }
-    LOOP B OVER { "BLACK" "RED" "YELLOW" }
-    END
-    END
+    FORWARD 5
+    RIGHT 45
+    FORWARD 5
+    RIGHT 45
+    FORWARD 5
+    RIGHT 45
+    FORWARD 5
+    RIGHT 45
+    FORWARD 5
+    RIGHT 45
+    FORWARD 5
+    RIGHT 45
+    FORWARD 5
 END

@@ -1,3 +1,4 @@
 START
    SET A ( 1 )
+   SET B ( 2 )
 END
