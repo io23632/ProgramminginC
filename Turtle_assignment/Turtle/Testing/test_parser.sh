@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd ..
-make run
+make interp_s
 
 exit_status=$?
 

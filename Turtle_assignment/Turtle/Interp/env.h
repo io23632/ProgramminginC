@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+
 
 #define BASE_KEY 'A'
 #define MAX_KEY 'Z'
@@ -9,7 +9,7 @@
 #define KEY(x) (x - 'A')
 
 typedef struct env {
-  double mapping[KEYS]; // union of letters, numbers or words. 
+  double mapping[KEYS]; // union of letters, doubles or words. 
     // switch double here for value structure. 
   int assigned[KEYS];
 } env_t;
@@ -37,6 +37,7 @@ void set_key(env_t* e, char key, double d) {
 
   e->assigned[KEY(key)] = 1;
   e->mapping[KEY(key)] = d;
+  
 }
 
 void init_env(env_t* e) {
@@ -44,7 +45,3 @@ void init_env(env_t* e) {
     e->assigned[KEY(i)] = 0;
   }
 }
-
-// void free_env(env_t* e) {
-//   free(e);
-// }

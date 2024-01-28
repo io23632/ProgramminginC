@@ -1,0 +1,7 @@
+START
+  SET B ( 5 )
+  LOOP A OVER { $B 5 5 5 }
+    FORWARD $A
+    RIGHT 90
+  END
+END

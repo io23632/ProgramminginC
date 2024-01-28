@@ -1,7 +1,5 @@
-//#include "stack.h"
 #include "interp.h"
 #include "../neillsimplescreen.h"
-
 
 int main(int argc, char *argv[]) {
     test();
@@ -27,27 +25,28 @@ int main(int argc, char *argv[]) {
     }
 
     INSLST* head = NULL;
-    env_t e;
+    env e;
+    stack* stck = init_stack();
     grid g;
-    TurtleState state = {25, 17, 90, true, 'W'};
+    TurtleState state = {26, 17, 90, 'W'};
     initilgrid(&g);
     init_env(&e);
-
+    
     // if the input is: ./interp.c <inputfile.ttl> <outputfile.txt>: print results to text file
     if (argc == 3) {
         freopen(argv[2], "w", stdout);
         parsePROG(&p, &head);
-        interp(head, &state, &e, &g);
+        interp(head, &state, &e, &g, stck);
         //writetoFile(&g, argv[2]);
         fclose(stdout);
     }
     // if the input is: ./interp.c <inputfile.ttl>: print results to screen
     else if (argc == 2) {
         parsePROG(&p, &head);
-        interp(head, &state, &e, &g);
+        interp(head, &state, &e, &g, stck);
     }
     freeINSLST(head);
-    
+    free(stck);
     return 0;
 }
 
@@ -122,24 +121,24 @@ if (strcmp(p->input[p->current_count], "END") != 0) {
 
 }
 
-void interp(INSLST* inslst, TurtleState* state, env_t* e, grid* g) {
+void interp(INSLST* inslst, TurtleState* state, env* e, grid* g, stack* stck) {
 
     while (inslst != NULL) {
         switch (inslst->type) {
             case INS_FWD:
-                go_fwd(state, inslst->ins.fwd, g);
+                go_fwd(state, inslst->ins.fwd, g, e);
                 break;
             case INS_RGT:
-                turn_rgt(state, inslst->ins.rgt);
+                turn_rgt(state, inslst->ins.rgt, e);
                 break;
             case INS_COL:
                 set_col(state, inslst->ins.col);
                 break;
             case INS_LOOP:
-                interp_loop(&inslst->ins.loop, state, e, g);
+                interp_loop(&inslst->ins.loop, state, e, g, stck);
                 break;
             case INS_SET:
-                interp_set_env(e, &inslst->ins.set);
+                interp_set_env(e, &inslst->ins.set, stck);
                 break;
             default:
                 fprintf(stderr, "Unrecognized instruction type\n");
@@ -155,11 +154,11 @@ void interp(INSLST* inslst, TurtleState* state, env_t* e, grid* g) {
 FWD parseFWD(prog* p)
 {
     FWD fwd_ins;
-    fwd_ins.type = INS_FWD;
     p->current_count++;
 
     // if there is a number following the FORWARD Instruction:
     if (isNUMBER(p->input[p->current_count])) {
+        fwd_ins.type = NUMBER;
         if (sscanf(p->input[p->current_count], "%lf", &fwd_ins.varnum.number) != 1) {
             fprintf(stderr, "Error: Invalid number format after FORWARD\n");
             exit(1);
@@ -171,6 +170,7 @@ FWD parseFWD(prog* p)
 
     // if there is a variable following the FORWARD Instruction:
     else if (isVARIABLE(p->input[p->current_count])) {
+        fwd_ins.type = VARIABLE;
         fwd_ins.varnum.variable = p->input[p->current_count][1];
         p->current_count++;
         return fwd_ins;
@@ -187,11 +187,11 @@ RGT parseRGT(prog* p)
 {
     
     RGT rgt_ins;
-    rgt_ins.type = INS_RGT;
     p->current_count++;
 
     // if there is a number following the RIGTH Instruction:
     if (isNUMBER(p->input[p->current_count])) {
+        rgt_ins.type = NUMBER;
         if (sscanf(p->input[p->current_count], "%lf", &rgt_ins.varnum.number) != 1) {
             fprintf(stderr, "Expected a valid token number after RIGHT\n");
             exit(1);
@@ -202,6 +202,7 @@ RGT parseRGT(prog* p)
 
     // if there is a variable following the RIGTH Instruction:
     else if (isVARIABLE(p->input[p->current_count])) {
+        rgt_ins.type = VARIABLE;
         rgt_ins.varnum.variable = p->input[p->current_count][1];
         p->current_count++;
         return rgt_ins;
@@ -273,50 +274,47 @@ return set;
 
 }
 
-void interp_set_env(env_t* e, SET* s)
+void interp_set_env(env* e, SET* s, stack* stck)
 {
-
-set_key(e, s->letter, 0); // calculate the value of the postfix expression. (instead of 0) 
-
+double result = evaluate_postfix(e, s, stck);
+setkey_number(e, s->letter, result);
 }
 
-void interp_loop(LOOP* loop, TurtleState* state, env_t* e, grid* g) 
+void interp_loop(LOOP* loop, TurtleState* state, env* e, grid* g, stack* stck) 
 {
-
 for (int i = 0; i < loop->loop_set->list_count; i++) {
-    set_key(e, loop->loop_variable, loop->loop_set->item_data[i].items.varnum.number); 
+    ITEM current_item = loop->loop_set->item_data[i];
+    if (current_item.type == NUMBER) {
+        setkey_number(e, loop->loop_variable, loop->loop_set->item_data[i].items.varnum.number);
+        printf("%lf\n", loop->loop_set->item_data[i].items.varnum.number);
+    }
+
+    else if (current_item.type == Word) {
+        char colour = set_col(state, loop->loop_body->ins.col.COL_postfix.word.str);
+        printf("%c\n", colour);
+    }
+
+
+    else if (current_item.type == VARIABLE) {
+        char varkey = loop->loop_set->item_data[i].items.varnum.variable;
+        double number = getkey_number(e, varkey);
+        setkey_number(e, loop->loop_variable, number);
+    }
+
+    interp(loop->loop_body, state, e, g, stck);
+    
     // Tweek this: items.varnum.number = atom, where atom is a struct, with 1 field which has a type, and a union of variables and values. 
-    interp(loop->loop_body, state, e, g);
 }
 
-
 }
 
-// Write a evaluater: needs to calculate the value of hte postfix expression. recursive 
+// Write a evaluater: needs to calculate the value of the postfix expression. recursive 
 // atomic expressions can exist as variables, numbers, letters of words. described via a strucuture, which includes a type
 // in the environment any atomic expression has a value. 
 // two unions, one is called value : number letter or word 
 //              atom: variable or a value 
 // environment stores values, atom can be turned into a value as long as you have a envirnment. 
 // S
-
-void interp_set(stack* s, SET* set)
-{
-    
-
-    for (int i = 0 ; i < set->postfix_count; i++) {
-        PFix* currentPFix = &set->postfix[i];
-
-        if (currentPFix->type == NUMBER) {
-            stack_push(s, currentPFix->precurse.varnum.number);
-            printf("%lf\n", currentPFix->precurse.varnum.number);
-        }
-        
-
-        
-    }
-
-}
 
 void parsePOSTFIX(prog* p, SET* set) {
 
@@ -358,11 +356,59 @@ void parsePOSTFIX(prog* p, SET* set) {
     p->current_count++; // Move past the closing parenthesis
 }
 
+double evaluate_postfix(env* e, SET* set, stack* stck) {
+
+    for (int i = 0; i < set->postfix_count; i++) {
+        PFix* currentPFix = &set->postfix[i];
+
+        if (currentPFix->type == NUMBER) {
+            stack_push(stck, currentPFix->precurse.varnum.number);
+            //printf("%lf\n", currentPFix->precurse.varnum.number);
+        }
+        else if (currentPFix->type == VARIABLE) {
+            char varKey = currentPFix->precurse.varnum.variable;
+            stack_push(stck, getkey_number(e, varKey));
+            //printf("varKEY is: %c\n", varKey);
+        }
+        else if (currentPFix->type == OPERATION) {
+            if (stck->size < 2) {
+                fprintf(stderr, "Not enough operands for operation\n");
+                exit(1);
+            }
+            double b = stack_pop(stck);
+            //printf("b is: %lf\n", b);
+            double a = stack_pop(stck);
+            //printf("a is: %lf\n", a);
+            double result = 0;
+            //printf("%c\n", currentPFix->precurse.symbol);
+
+            switch (currentPFix->precurse.symbol) {
+                case '+': result = a + b; break;
+                case '-': result = a - b; break;
+                case '*': result = a * b; break;
+                case '/': result = a / b; break;
+                default:
+                    fprintf(stderr, "Unrecognised operation: %c\n", currentPFix->precurse.symbol);
+                    exit(1);
+            }
+            stack_push(stck, result);
+            //printf("result is %lf\n", result);
+        }
+        
+    }
+
+    if (stck->size != 1) {
+        fprintf(stderr, "Error in postfix evaluation\n");
+        exit(1);
+    }
+    double finalResult = stack_pop(stck);
+    return finalResult;
+}
+
 LOOP parseLOOP(prog* p)
 {
 
     LOOP loop;
-    loop.type = INS_LOOP;
     loop.loop_body = NULL;
     loop.loop_set = NULL;
     p->current_count++;
@@ -440,6 +486,7 @@ ITEM* currentList = &list->item_data[list->list_count];
 
 // if is Number: 
 if (isNUMBER(p->input[p->current_count])) {
+    currentList->type = NUMBER;
     if (sscanf(p->input[p->current_count], "%lf", &currentList->items.varnum.number) != 1) {
         fprintf(stderr, "Invalid number in list");
         exit(1);
@@ -449,11 +496,12 @@ if (isNUMBER(p->input[p->current_count])) {
 // if is variable:
 
 else if (isVARIABLE(p->input[p->current_count])) {
+    currentList->type = VARIABLE;
     currentList->items.varnum.variable = p->input[p->current_count][0];
 }
 
 else {
-
+    currentList->type = Word;
     isWORD(p, list->item_data->items.word.str);
 }
 
@@ -542,57 +590,48 @@ void freeINSLST(INSLST* inslst) {
     }
 }
 
-void go_fwd(TurtleState* state, FWD fwd_interp, grid* g)
+void go_fwd(TurtleState* state, FWD fwd_interp, grid* g, env* e)
 {
-    // assuming the turtel state in initlised in main to be: 
-    // Turtle state = { .x = 25, .y = 16, .angle = 90}
 
-    double distance = fwd_interp.varnum.number;
+    // if (is number)
     double radianANgle = state->angle * M_PI / 180.0;
-
     NUM x1 = state->x;
     NUM y1 = state->y;
-    state->pen = true;
-
+    if (fwd_interp.type == NUMBER) 
+    {
+    double distance = fwd_interp.varnum.number;
     NUM x2 = x1 + distance * round(cos(radianANgle));
     NUM y2 = y1 + distance * round(sin(radianANgle));
-
-    // if (state->x < 0) {
-    //     state->x = 0;
-    // }
-    // else if (state->x >= GRID_WIDTH){
-    //     state->x = GRID_WIDTH -1;
-    // }
-
-    // if (state->y < 0) {
-    //     state->y = 0;
-    // }
-    // else if (state->y >= GRID_HEIGHT) {
-    //     state->y = GRID_HEIGHT - 1;
-    // }
-
-    // if (x1 < 0) {
-    //     x1 = 0;
-    // }
-    // else if (x1 >= GRID_WIDTH){
-    //     x1 = GRID_WIDTH -1;
-    // }
-
-    // if (y1 < 0) {
-    //     y1 = 0;
-    // }
-    // else if (y1 >= GRID_HEIGHT) {
-    //     y1 = GRID_HEIGHT - 1;
-    // }
     linedraw(x1, y1, x2, y2, g, state->colour);
-    printgrid(g);
     state->x = x2;
     state->y = y2;
+    }
+
+    else if (fwd_interp.type == VARIABLE)
+    {
+        char varkey = fwd_interp.varnum.variable;
+        double distance = getkey_number(e, varkey);
+        NUM x2 = x1 + distance * round(cos(radianANgle));
+        NUM y2 = y1 + distance * round(sin(radianANgle));
+        linedraw(x1, y1, x2, y2, g, state->colour);
+        state->x = x2;
+        state->y = y2;
+    }
+
+    printgrid(g);
+    
 }
 
-void turn_rgt(TurtleState* state, RGT rgt_ins) {
-
-    state->angle = state->angle - rgt_ins.varnum.number;
+void turn_rgt(TurtleState* state, RGT rgt_ins, env* e) 
+{
+    if (rgt_ins.type == NUMBER) {
+        state->angle = state->angle - rgt_ins.varnum.number;
+    }
+    else if (rgt_ins.type == VARIABLE) {
+        char varkey = rgt_ins.varnum.variable;
+        double angle = getkey_number(e, varkey);
+        state->angle = state->angle - angle;
+    }
 }
 
 stack* init_stack(void)
@@ -615,6 +654,15 @@ void stack_push(stack* s, NUM number)
     s->arr[s->size] = number;
     s->size++;
 
+}
+
+double stack_pop(stack* s) {
+    if (s == NULL || s->size <= 0) {
+        fprintf(stderr, "Stack underflow\n");
+        exit(1);
+    }
+    s->size--;
+    return s->arr[s->size];
 }
 
 void initilgrid(grid* g)
@@ -709,7 +757,7 @@ void printgrid(grid* g)
     }
     printf("\n");
 }
-neillbusywait(1.0); 
+neillbusywait(0.5); 
 }
 
 void set_col(TurtleState* state, COL col_interp)
@@ -746,6 +794,89 @@ void set_col(TurtleState* state, COL col_interp)
     }
 }
 
+// initiliase the environment:
+void init_env(env* e) 
+{
+for (char i = BASE_KEY; i <= MAX_KEY; i++) {
+    e->assigned[KEY(i)] = 0;
+}
+e->assigned_keycount = 0;
+}
+
+void check_key(env* e, char key)
+{
+    if (key < BASE_KEY || key >= MAX_KEY) {
+        fprintf(stderr, "Unrecognised key %c, ", key);
+        exit(1);
+    }
+    if (e->assigned_keycount >= MAX_KEY) {
+        fprintf(stderr, "All letters have assigned variables");
+        exit(1);
+    }
+}
+
+double getkey_number(env* e, char key) {
+  check_key(e, key);
+
+  if (!e->assigned[KEY(key)]) {
+    fprintf(stderr, "Unassigned key '%c'", key);
+    exit(1);
+  }
+
+  return e->env_list.num_mapping[KEY(key)];
+}
+
+LTR getkey_letter(env* e, char key) {
+  check_key(e, key);
+
+  if (!e->assigned[KEY(key)]) {
+    fprintf(stderr, "Unassigned key '%c'", key);
+    exit(1);
+  }
+
+  return e->env_list.ltr_mapping[KEY(key)];
+}
+
+WORD getkey_word(env* e, char key) {
+  check_key(e, key);
+
+  if (!e->assigned[KEY(key)]) {
+    fprintf(stderr, "Unassigned key '%c'", key);
+    exit(1);
+  }
+
+  return e->env_list.word_mapping[KEY(key)];
+}
+
+void setkey_number(env* e, char key, double d) {
+    
+    check_key(e, key);
+
+    e->assigned[KEY(key)] = 1;
+    e->env_list.num_mapping[KEY(key)] = d;
+    
+}
+
+// for loop
+void setkey_letter(env* e, char key, LTR l)
+{
+    check_key(e, key);
+
+    e->assigned[KEY(key)] = e->assigned_keycount;
+    e->env_list.ltr_mapping[KEY(key)] = l;
+    e->assigned_keycount++;
+}
+// for loop 
+void setkey_word(env* e, char key, WORD word)
+{
+    check_key(e, key);
+
+    e->assigned[KEY(key)] = e->assigned_keycount;
+    e->env_list.word_mapping[KEY(key)] = word;
+    e->assigned_keycount++;
+}
+
+
 void test(void) 
 {
 
@@ -772,3 +903,31 @@ void test(void)
     assert(isLetter("$A") == false);
 
 }
+
+
+
+
+
+
+
+
+
+
+// void interp_set(stack* s, SET* set)
+// {
+    
+
+//     for (int i = 0 ; i < set->postfix_count; i++) {
+//         PFix* currentPFix = &set->postfix[i];
+
+//         if (currentPFix->type == NUMBER) {
+//             stack_push(s, currentPFix->precurse.varnum.number);
+//             printf("%lf\n", currentPFix->precurse.varnum.number);
+//         }
+        
+
+        
+//     }
+
+// }
+

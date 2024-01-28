@@ -1,0 +1,4 @@
+START
+SET A ( 1 3 + )
+SET B ( $A )
+END

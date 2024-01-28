@@ -1,0 +1,6 @@
+START
+  FORWARD 8
+  RIGHT 45
+  SET A ( 8 )
+  FORWARD $A
+END

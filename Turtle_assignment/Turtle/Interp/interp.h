@@ -5,8 +5,11 @@
 #include <ctype.h>
 #include <assert.h>
 #include <math.h>
-#include "env.h"
-//#include "stack.h"
+#define BASE_KEY 'A'
+#define MAX_KEY 'Z'
+#define KEY_RANGE (MAX_KEY - BASE_KEY + 1)
+#define KEY(x) (x - 'A')
+
 
 #define MAXTOKENSIZE 1000
 #define GRID_WIDTH 51
@@ -26,6 +29,7 @@ typedef enum{
     NUMBER,
     VARIABLE,
     OPERATION,
+    Word,
 }POSTFIXTYPE;
 
 typedef double NUM;
@@ -49,7 +53,7 @@ typedef struct WORD {
 }WORD;
 
 typedef struct ITEM{
-    INSTYPE type; // ITEM TYPE 
+    POSTFIXTYPE type;
     union {
         VARNUM varnum;
         WORD word;
@@ -86,22 +90,20 @@ typedef struct COL{
 }COL;
 
 typedef struct RGT{
-    INSTYPE type;
+    POSTFIXTYPE type;
     VARNUM varnum;
 }RGT;
 
 typedef struct FWD{
-    INSTYPE type;
+    POSTFIXTYPE type;
     VARNUM varnum;
 }FWD;
 
 
 typedef struct LOOP {
-    INSTYPE type; // delete INSTYPE
     LTR loop_variable;            // The loop variable
     LST* loop_set;                // The set of values to iterate over
-    INSLST* loop_body;            // Pointer to the first instruction in the loop body
-    // struct LOOP* next;   
+    INSLST* loop_body;            // Pointer to the first instruction in the loop body  
 }LOOP;
 
 struct INSLST{
@@ -120,13 +122,22 @@ typedef struct TurtleState{
     NUM x;
     NUM y;
     NUM angle;
-    bool pen;
     char colour; 
 }TurtleState;
 
 typedef struct grid{
     char pixel[GRID_WIDTH][GRID_HEIGHT];
 }grid;
+
+typedef struct env{
+    union {
+        double num_mapping[KEY_RANGE]; // assign numbers (in double form to the letters in the KEY RANGE)
+        LTR ltr_mapping[KEY_RANGE]; // assign char i.e. variables e.g. $B to the letters in KEY RANGE, where LTR is typedef char LTR
+        WORD word_mapping[KEY_RANGE]; // assign words to the letters in the key range 
+    }env_list;
+    int assigned[KEY_RANGE];
+    int assigned_keycount;
+}env;
 
 typedef struct stack
 {
@@ -151,24 +162,34 @@ void parsePOSTFIX(prog* p, SET* set);
 LST parseLST(prog* p);
 void parseITEM(prog* p, LST* list);
 void freeINSLST(INSLST* head);
+
 //////////Interpreter functions//////
-void interp(INSLST* inslst, TurtleState* state, env_t* e, grid* g);
-void go_fwd(TurtleState* T, FWD fwd_interp, grid* g);
-void turn_rgt(TurtleState* T, RGT rgt_ins);
+void interp(INSLST* inslst, TurtleState* state, env* e, grid* g, stack* stck);
+void go_fwd(TurtleState* state, FWD fwd_interp, grid* g, env* e);
+void turn_rgt(TurtleState* state, RGT rgt_ins, env* e);
 bool inbounds(NUM x1, NUM y1);
 void linedraw(int x1, int y1, int x2, int y2, grid* g, char c);
 void initilgrid(grid* g);
 void printgrid(grid* g);
 void set_col(TurtleState* state, COL col_interp);
-void interp_loop(LOOP* loop, TurtleState* state, env_t* e, grid* g);
-void interp_set_env(env_t* e, SET* s);
-//void writetoFile(grid* g, const char* filename);
+void interp_loop(LOOP* loop, TurtleState* state, env* e, grid* g, stack* stck);
+void interp_set_env(env* e, SET* s, stack* stck);
+double evaluate_postfix(env* e, SET* set, stack* stck);
 
-// void interp_loop(TurtleState* T, LOOP loop_interp);
+void init_env(env* e);
+void check_key(env* e, char key);
+double getkey_number(env* e, char key);
+LTR getkey_letter(env* e, char key);
+WORD getkey_word(env* e, char key);
+Op getkey_(env* e, char key);
+void setkey_number(env* e, char key, double d);
+void setkey_letter(env* e, char key, LTR l);
+void setkey_word(env* e, char key, WORD word);
+void setkey_Op(env* e, char key, Op operation);
 
 stack* init_stack(void);
 void stack_push(stack* s, NUM number);
+double stack_pop(stack* s);
 void interp_set(stack* s, SET* set);
-
 
 void test(void);
